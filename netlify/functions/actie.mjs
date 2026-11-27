@@ -231,6 +231,17 @@ function overzichtHtml(boekingen, inst, intro = '', nieuw = new Set()) {
 }
 
 // ── Mail (Resend) ────────────────────────────────────────────────────
+// Kopje boven elke mail: klein logo, de titel van de mail en een dun lijntje in huisstijlgoud.
+// Tabellen en inline stijlen, zodat het ook in Outlook en Gmail goed staat.
+function metKop(titel, html) {
+  const basis = (env('URL') || '').replace(/\/$/, '');
+  const logo = basis ? `<td style="width:56px;padding:0 14px 0 0;vertical-align:middle"><img src="${esc(basis)}/img/logo-mail.png" width="56" height="56" alt="de Broekhof" style="display:block;border:0;border-radius:6px"></td>` : '';
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:700px;margin:0 0 20px 0;border-collapse:collapse">
+    <tr>${logo}<td style="vertical-align:middle;font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:bold;color:#2d2921">${esc(titel)}</td></tr>
+    <tr><td colspan="2" style="padding-top:12px"><div style="height:2px;line-height:2px;font-size:0;background:#8c6d3f">&nbsp;</div></td></tr>
+  </table>${html}`;
+}
+
 const geldigAdres = s => /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(String(s || '').trim());
 
 async function mail({ naar, cc = [], onderwerp, html, tekst, bijlagen = [], soort, boekingId = null, sleutel = null }, inst) {
@@ -244,7 +255,7 @@ async function mail({ naar, cc = [], onderwerp, html, tekst, bijlagen = [], soor
     headers: { Authorization: `Bearer ${env('RESEND_API_KEY')}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       from: afzender, to, cc: ccLijst.length ? ccLijst : undefined, reply_to: inst.email_info,
-      subject: onderwerp, html, text: tekst,
+      subject: onderwerp, html: html ? metKop(onderwerp, html) : html, text: tekst,
       attachments: bijlagen.length ? bijlagen.map(b => ({ filename: b.naam, content: b.inhoud.toString('base64') })) : undefined,
     }),
   });

@@ -1,9 +1,17 @@
 {
   "versies": [
     {
-      "versie": "2.0.8.0",
+      "versie": "2.0.9.0",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "Alle mails die de app verstuurt beginnen nu met het logo van de Broekhof, met daarnaast de titel van de mail en eronder een dun goudkleurig lijntje."
+      ]
+    },
+    {
+      "versie": "2.0.8.0",
+      "datum": "2026-11-27",
+      "commit": "6f05cfe1cb5867b7f8d7ac33867624ad0c1819df",
       "wijzigingen": [
         "Komt er een nieuwe boeking bij, dan krijgt de sleutelbeheerder de volgende ochtend rond 07:00 automatisch het overzicht, met info in kopie. Bovenaan staat welke boeking of boekingen nieuw zijn, en in het overzicht zijn ze gemarkeerd met NIEUW.",
         "Heb je de sleutelbeheerder die dag al zelf een overzicht gestuurd, dan komt een boeking die daarvoor al bestond niet nog eens als nieuw."
