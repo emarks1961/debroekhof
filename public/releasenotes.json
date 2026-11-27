@@ -1,9 +1,17 @@
 {
   "versies": [
     {
-      "versie": "2.0.10.1",
+      "versie": "2.0.10.2",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "De link 'OneDrive koppelen' onderaan de pagina is weggehaald."
+      ]
+    },
+    {
+      "versie": "2.0.10.1",
+      "datum": "2026-11-27",
+      "commit": "82b2d722e307f033b19378af8ff30357ca86ab87",
       "wijzigingen": [
         "De tekst boven de knop 'Ik wil graag nog extra's bestellen' in de herinneringsmail is aangepast: de huurder leest nu dat de al betaalde extra's erboven staan en dat aanvullende wensen welkom zijn."
       ]
