@@ -444,7 +444,7 @@ const beheerActies = {
         onderwerp: `Boekingen De Broekhof - overzicht ${nl(vandaag())}`,
         html: overzichtHtml(lijst, inst), soort: 'overzicht',
       }, inst);
-      return { status: 'ok' };
+      return { status: 'ok', naar: inst.email_info };
     }
 
     if (d.soort === 'sleutelbeheerder') {
@@ -457,7 +457,7 @@ const beheerActies = {
         <p>Met vriendelijke groet,<br><strong>${esc((inst.ondertekening || '').split(' ')[0])}</strong></p>
         <hr style="border:none;border-top:1px solid #ddd;margin:20px 0">`;
       const naar = await mail({
-        naar: inst.email_sleutelbeheerder, cc: [inst.email_info],
+        naar: inst.email_sleutelbeheerder, cc: d.zonderInfo ? [] : [inst.email_info],
         onderwerp: 'Boekingen De Broekhof - overzicht voor sleutelbeheerder',
         html: overzichtHtml(lijst, inst, intro), soort: 'sleutelbeheerder',
       }, inst);

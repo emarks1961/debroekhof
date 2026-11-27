@@ -329,7 +329,10 @@
     },
     legVastNuki: d => roepFunctie('nuki', d),
     onedriveKoppelen: () => roepFunctie('onedrive-koppelen', {}),
-    stuurOverzicht: () => roepFunctie('mail', { soort: 'overzicht' }),
+    // Overzicht naar info, de sleutelbeheerder of beiden (sleutelbeheerder met info in cc)
+    stuurOverzicht: ({ naar } = {}) => naar === 'sleutelbeheerder' || naar === 'beide'
+      ? roepFunctie('mail', { soort: 'sleutelbeheerder', zonderInfo: naar === 'sleutelbeheerder' })
+      : roepFunctie('mail', { soort: 'overzicht' }),
     informeerSleutelbeheerder: d => roepFunctie('mail', { soort: 'sleutelbeheerder', naam: d.naam, aankomst: d.aankomst }),
     stuurHerinneringHandmatig: d => roepFunctie('mail', {
       soort: 'aankomst', ontvanger: d.ontvanger, boekingId: d.rijnr ? uuidVan(d.rijnr) : null,

@@ -1,9 +1,18 @@
 {
   "versies": [
     {
-      "versie": "2.0.7.0",
+      "versie": "2.0.7.1",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "Bij de boekingen staan de notitie en de melding 'Automatisch ingelezen via Micazu' niet meer.",
+        "Bij 📧 Overzicht kies je nu naar wie het gaat: Info, Sleutelbeheerder of Beide."
+      ]
+    },
+    {
+      "versie": "2.0.7.0",
+      "datum": "2026-11-27",
+      "commit": "13991b2cfd721213d42185a7824b83ddb62e3db7",
       "wijzigingen": [
         "In het briefhoofd van de bevestiging staat weer de tekening van de Broekhof, zoals in het oude Google Doc.",
         "Na het versturen van een bevestiging wordt de PDF ook opgeslagen in OneDrive, in de map De Broekhof en daarin de map met het jaartal van aankomst. Dit werkt nadat je OneDrive eenmalig hebt gekoppeld (onderaan de app: OneDrive koppelen).",
