@@ -549,7 +549,8 @@ function nlDatumNaarIso(s) {
 }
 
 function micazuBedrag(s) {
-  let t = String(s || '').replace(/[€\s]/g, '');
+  const getal = String(s || '').match(/\d[\d.,]*/); // "met verblijf dieren € 100,00" → "100,00"
+  let t = getal ? getal[0].replace(/[.,]$/, '') : '';
   if (!t) return 0;
   if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
   else if (/\.\d{3}$/.test(t)) t = t.replace(/\./g, '');
@@ -636,7 +637,10 @@ async function micazuInbound(req, ruw) {
     soort: 'micazu-inbound', sleutel: emailId,
   }, inst);
 
-  if (!MICAZU_HERKEN.test(`${m.subject || ''} ${tekst.slice(0, 600)}`)) {
+  // Alleen een acceptatiebevestiging met boekings- én huurdergegevens wordt een boeking
+  const isAcceptatie = MICAZU_HERKEN.test(`${m.subject || ''} ${tekst.slice(0, 600)}`)
+    && /gegevens van de boeking/i.test(tekst) && /gegevens huurder/i.test(tekst);
+  if (!isAcceptatie) {
     await melding(`Doorgestuurd: ${m.subject || '(geen onderwerp)'}`,
       '<p>Deze mail kwam binnen op het Micazu-adres van de beheerapp, maar is geen geaccepteerde boeking. Hij is hieronder doorgestuurd.</p>');
     return antwoord({ status: 'ok', resultaat: 'doorgestuurd' });
