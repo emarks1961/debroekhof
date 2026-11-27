@@ -71,6 +71,18 @@ Gmail moet lezen. Vervang in het bestaande Apps Script-project `micazu.gs` door
 Zet daarna in Apps Script de triggers van `stuurAankomstMailDagelijks` en
 `stuurFinancieelOverzichtAlsNodig` uit: dat doet de nieuwe app nu (`planning.mjs`).
 
+## Gegevens overzetten uit de Google Sheet
+
+Zie `scripts/migratie/migreer.mjs`. Kort:
+
+1. Download de tabbladen "Formulierreacties 1" en "Financieel status" als CSV naar
+   `scripts/migratie/data/boekingen.csv` en `financieel.csv` (deze map gaat nooit naar Git).
+2. `node scripts/migratie/migreer.mjs`: proefdraai, schrijft `data/rapport.md` met
+   meldingen en de koppeling van betaalstatus aan boekingen. Controleer die.
+3. `SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… node scripts/migratie/migreer.mjs --uitvoeren`
+
+Rijen overslaan (bv. testboekingen): `--sla-over=4,12`.
+
 ## Geheimen
 
 Er staan geen sleutels of wachtwoorden in deze repository. Alles staat als
