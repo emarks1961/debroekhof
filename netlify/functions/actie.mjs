@@ -502,6 +502,10 @@ async function micazuImport(b, inst) {
       land: 'Nederland', toegangscode: genereerToegangscode(),
       checkin: tijden.checkin || '16:00', checkout: tijden.checkout || '10:00',
       bron: 'micazu-aanvullen', vraag_huurder: b.vraag || null, notitie: b.notitie || null,
+      bruto_huurprijs: Number(b.brutoHuurprijs) || Number(b.huurprijs) || 0,
+      lastminute_korting: Number(b.lastminuteKorting) || 0,
+      overige_extras: b.overigeExtras || null,
+      prijs_overige_extras: Number(b.prijsOverige) || 0,
     },
   });
   return { status: 'ok', resultaat: 'nieuw', id: rij.id };
@@ -626,12 +630,21 @@ function parseMicazuMail(tekst) {
   if (!posten.length) extras = bedlinnen * 10 + keukenlinnen * 7;
   let totaal = micazuBedrag(val('Totaalprijs', boeking));
   let huurprijs = rond((huur || 0) + kortingen);                // huur na korting
+  // Overige extra's: alles behalve bed- en keukenlinnen (bv. kinderbed)
+  const overigePosten = extraPosten.filter(p => !/^(bed|keuken)linnen/i.test(p.label));
+  let overigeExtras = overigePosten.map(p => p.label).join(', ');
+  let prijsOverige = rond(overigePosten.reduce((t, p) => t + p.bedrag, 0));
   if (!totaal) totaal = rond(huurprijs + extras);
   else if (Math.abs(huurprijs + extras - totaal) > 0.01) {
     // Klopt de som niet met de Micazu-totaalprijs: die is leidend
-    if (totaal >= huurprijs) extras = rond(totaal - huurprijs);  // ontbrekende extra's
-    else huurprijs = rond(totaal - extras);                      // niet-vermelde korting
+    if (totaal >= huurprijs) {                                   // ontbrekende extra's
+      const verschil = rond(totaal - huurprijs - extras);
+      extras = rond(totaal - huurprijs);
+      if (verschil > 0) { prijsOverige = rond(prijsOverige + verschil); overigeExtras = [overigeExtras, 'overig (Micazu)'].filter(Boolean).join(', '); }
+    } else huurprijs = rond(totaal - extras);                    // niet-vermelde korting
   }
+  const brutoHuurprijs = huur || huurprijs;
+  const lastminuteKorting = rond(Math.max(0, brutoHuurprijs - huurprijs));
 
   const euroNL = n => `€ ${n.toFixed(2).replace('.', ',')}`;
   const volw = aantal('Aantal volwassenen', gegevens), kind = aantal('Aantal kinderen', gegevens), baby = aantal('Aantal baby', gegevens);
@@ -648,6 +661,7 @@ function parseMicazuMail(tekst) {
   return {
     aankomst, vertrek, voornaam, achternaam, personen, huisdieren, bedlinnen, keukenlinnen,
     huurprijs: huurprijs || rond(totaal - extras), extras, totaal, schoonmaak, vraag, notitie,
+    brutoHuurprijs, lastminuteKorting, overigeExtras, prijsOverige,
     posten,
   };
 }

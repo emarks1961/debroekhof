@@ -74,8 +74,17 @@ function nbBerekenExtras() {
   // Automatisch berekenen op basis van linnen, maar kan worden overschreven
   const bed    = parseInt(document.getElementById('nb-bedlinnen').value) || 0;
   const keuken = parseInt(document.getElementById('nb-keuken').value) || 0;
-  const berekend = (bed * 10) + (keuken * 7);
+  const overig = parseFloat(document.getElementById('nb-overig-prijs').value) || 0;
+  const berekend = Math.round(((bed * 10) + (keuken * 7) + overig) * 100) / 100;
   document.getElementById('nb-extras').value = berekend > 0 ? berekend : 0;
+  nbBerekenTotaal();
+}
+function nbBerekenHuur() {
+  // Huurprijs = bruto huurprijs − last-minute korting
+  const bruto   = parseFloat(document.getElementById('nb-bruto').value) || 0;
+  const korting = parseFloat(document.getElementById('nb-korting').value) || 0;
+  const huur = Math.round((bruto - korting) * 100) / 100;
+  document.getElementById('nb-huurprijs').value = bruto ? huur : '';
   nbBerekenTotaal();
 }
 function nbBerekenTotaal() {
@@ -516,6 +525,7 @@ async function voerActieUit(actieType) {
     g('nb-borg'),                                              // 17
     g('nb-telefoon'), g('nb-adres'), g('nb-postcode'), g('nb-plaats'), g('nb-land'), // 18-22
     g('nb-email'), '', g('nb-code'), checkin, checkout,        // 23-27
+    g('nb-overig'), g('nb-overig-prijs'), g('nb-bruto'), g('nb-korting'), // 28-31
   ];
 
   // PDF placeholders
@@ -540,6 +550,10 @@ async function voerActieUit(actieType) {
     'Borg':                     g('nb-borg') || '0',
     'Prijs schoonmaak':         '€ ' + g('nb-schoonmaak'),
     "Prijs extra's":          g('nb-extras'),
+    'Bruto huurprijs':          g('nb-bruto') || g('nb-huurprijs'),
+    'Last-minute korting':      g('nb-korting') || '0',
+    "Overige extra's":          g('nb-overig'),
+    "Prijs overige extra's":    g('nb-overig-prijs') || '0',
     'Totale huursom':           g('nb-totaal'),
     'Aanbetaling':              g('nb-aanbetaling'),
     'Restant betaling huursom': g('nb-restant'),
@@ -705,6 +719,8 @@ function resetFormulier() {
   document.getElementById('nb-bedlinnen').value  = '0';
   document.getElementById('nb-keuken').value     = '0';
   document.getElementById('nb-extras').value     = '0';
+  document.getElementById('nb-korting').value    = '0';
+  document.getElementById('nb-overig-prijs').value = '0';
   document.getElementById('nb-schoonmaak').value = '90';
   bewerkRijnr = null;
   // Verwijder rode randen
@@ -1189,6 +1205,10 @@ select.nb-inp{appearance:auto}
       <div class="nb-veld"><label class="nb-lbl">Bedlinnen</label><input class="nb-inp" type="number" id="nb-bedlinnen" min="0" value="0" oninput="nbBerekenExtras()"></div>
       <div class="nb-veld"><label class="nb-lbl">Keukenlinnen</label><input class="nb-inp" type="number" id="nb-keuken" min="0" value="0" oninput="nbBerekenExtras()"></div>
     </div>
+    <div class="nb-rij">
+      <div class="nb-veld"><label class="nb-lbl">Overige extra's</label><input class="nb-inp" type="text" id="nb-overig" placeholder="bv. kinderbedje"></div>
+      <div class="nb-veld"><label class="nb-lbl">Prijs overige extra's (€)</label><input class="nb-inp" type="number" id="nb-overig-prijs" min="0" step="0.01" value="0" oninput="nbBerekenExtras()"></div>
+    </div>
     <div class="nb-rij nb-rij-1">
       <div class="nb-veld">
         <label class="nb-lbl">Toegangscode</label>
@@ -1206,9 +1226,11 @@ select.nb-inp{appearance:auto}
   <div class="nb-sectie" style="margin-top:32px">
     <div class="nb-sectie-titel">Financieel</div>
     <div class="nb-fin-grid">
-      <div class="nb-veld"><label class="nb-lbl">Huurprijs excl. schoonmaak (€)</label><input class="nb-inp" type="number" id="nb-huurprijs" min="0" step="0.01" oninput="nbBerekenTotaal()"></div>
+      <div class="nb-veld"><label class="nb-lbl">Bruto huurprijs (€)</label><input class="nb-inp" type="number" id="nb-bruto" min="0" step="0.01" oninput="nbBerekenHuur()"></div>
+      <div class="nb-veld"><label class="nb-lbl">Last-minute korting (€)</label><input class="nb-inp" type="number" id="nb-korting" min="0" step="0.01" value="0" oninput="nbBerekenHuur()"></div>
+      <div class="nb-veld"><label class="nb-lbl">Huurprijs excl. schoonmaak (€) <span class="nb-sub">bruto − korting</span></label><input class="nb-inp" type="number" id="nb-huurprijs" min="0" step="0.01" readonly style="background:var(--bg);color:var(--text-3)"></div>
       <div class="nb-veld"><label class="nb-lbl">Borg (€)</label><input class="nb-inp" type="number" id="nb-borg" min="0" step="0.01" oninput="nbBerekenTotaal()"></div>
-      <div class="nb-veld"><label class="nb-lbl">Prijs extra's (€) <span class="nb-sub">bed ×€10 + keuken ×€7</span></label><input class="nb-inp" type="number" id="nb-extras" min="0" step="0.01" value="0" oninput="nbBerekenTotaal()"></div>
+      <div class="nb-veld"><label class="nb-lbl">Prijs extra's (€)</label><input class="nb-inp" type="number" id="nb-extras" min="0" step="0.01" value="0" oninput="nbBerekenTotaal()"></div>
       <div class="nb-veld"><label class="nb-lbl">Totale huursom (€) <span class="nb-sub">excl. schoonmaak</span></label><input class="nb-inp" type="number" id="nb-totaal" min="0" step="0.01" readonly style="background:var(--bg);color:var(--text-3)"></div>
       <div class="nb-veld"><label class="nb-lbl">Aanbetaling (€) <span class="nb-sub">25% + borg</span></label><input class="nb-inp" type="number" id="nb-aanbetaling" min="0" step="0.01" readonly style="background:var(--bg);color:var(--text-3)"></div>
       <div class="nb-veld"><label class="nb-lbl">Restant (€) <span class="nb-sub">75%</span></label><input class="nb-inp" type="number" id="nb-restant" min="0" step="0.01" readonly style="background:var(--bg);color:var(--text-3)"></div>
@@ -2196,6 +2218,10 @@ function bewerkBoeking(rijnr, bDataStr) {
   console.log('[bewerkBoeking] code:', b.code, 'rijnr:', rijnr);
   document.getElementById('nb-code').value = b.code || '';
   s('nb-huurprijs',  b.huurprijs);
+  s('nb-bruto',      b.bruto || b.huurprijs);
+  s('nb-korting',    b.korting || '0');
+  s('nb-overig',     b.overig);
+  s('nb-overig-prijs', b.overigPrijs || '0');
   s('nb-schoonmaak', b.schoonmaak ? b.schoonmaak.replace('€','').trim() : '90');
   s('nb-extras',     b.extras || '0');
   s('nb-totaal',     b.totaal);
@@ -2434,6 +2460,7 @@ function importeerBoeking(input) {
       sv('nb-land',       get('Land') || 'Nederland');
       sv('nb-personen',   personen || '');
       sv('nb-huisdieren', huisdieren);
+      sv('nb-bruto',      huurprijs || '');
       sv('nb-huurprijs',  huurprijs || '');
       sv('nb-borg',       borg);
       sv('nb-schoonmaak', schoonmaak);

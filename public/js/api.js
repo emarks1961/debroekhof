@@ -117,6 +117,10 @@
       mailHuurder: !!r.mail_huurder,
       bron:        r.bron === 'micazu-aanvullen' ? 'Micazu – aanvullen' : tekst(r.bron),
       vraag:       tekst(r.vraag_huurder),
+      bruto:       bedragTekst(r.bruto_huurprijs ?? r.huurprijs),
+      korting:     bedragTekst(r.lastminute_korting ?? 0),
+      overig:      tekst(r.overige_extras),
+      overigPrijs: bedragTekst(r.prijs_overige_extras ?? 0),
       notitie:     tekst(r.notitie),
     };
   }
@@ -157,6 +161,10 @@
       toegangscode: code || null,
       checkin:      String(rij[26] || '16:00').slice(0, 5),
       checkout:     String(rij[27] || '10:00').slice(0, 5),
+      overige_extras:       leegNaarNull(rij[28]),
+      prijs_overige_extras: getal(rij[29]),
+      bruto_huurprijs:      rij[30] === undefined || rij[30] === '' ? getal(rij[11]) : getal(rij[30]),
+      lastminute_korting:   getal(rij[31]),
     };
   }
 
