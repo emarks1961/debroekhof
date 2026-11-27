@@ -244,7 +244,7 @@ function extrasKnopHtml(b, inst) {
   const href = `mailto:${inst.email_info || 'info@debroekhof.nl'}?subject=${encodeURIComponent(onderwerp)}&body=${encodeURIComponent(tekst)}`;
   return `
     <div style="margin:24px 0 8px 0;padding:16px;border-top:1px solid #ddd;text-align:center">
-      <p style="margin:0 0 12px 0">Geef s.v.p. uw wensen voor eventuele extra's door, wij zullen u zo spoedig mogelijk een antwoord sturen.</p>
+      <p style="margin:0 0 12px 0">In bovenstaand venster ziet u de reeds door u betaalde extra's. Nog iets vergeten? Geef s.v.p. aanvullende extra's aan ons door, wij zullen uw aanvraag zo spoedig mogelijk beantwoorden.</p>
       <a href="${esc(href)}" style="display:inline-block;padding:12px 22px;background:#8c6d3f;color:#ffffff;text-decoration:none;font-weight:bold;border-radius:4px">Ik wil graag nog extra's bestellen</a>
     </div>`;
 }
