@@ -11,6 +11,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="js/api.js"></script>
+<script src="js/huurovereenkomst.js"></script>
 <script>
 // Inloggen en sessie: zie js/api.js (Supabase Auth).
 
@@ -546,6 +547,7 @@ async function voerActieUit(actieType) {
   };
 
   const bestandsnaam = `${aankomst} Huurovereenkomst ${achternaam}`;
+  const inst = window.BROEKHOF.instellingen;
 
   const emailTekst = `Geachte ${aanhefBrief} ${achternaam}, beste ${voornaam},
 
@@ -555,7 +557,7 @@ U heeft vakantiewoning de Broekhof gereserveerd van ${aankomstMetDag} tot en met
 
 Graag ontvangen wij uw aanbetaling binnen één week na ontvangst van de huurovereenkomst. 
 Het resterende deel ontvangen wij graag vier weken voor het begin van de huurperiode op
-rekening NL16ABNA0254579973 t.n.v. Ekeby BV te Klarenbeek.
+rekening ${inst.iban || ''} t.n.v. ${inst.iban_tnv || ''}.
 
 Bijgaand ontvangt u de reserveringsbevestiging met de huurovereenkomst met verdere details en instructies voor de betaling, check-in en check-out.
 
@@ -578,10 +580,10 @@ Wij wensen u alvast een aangenaam verblijf toe.
 
 Met vriendelijke groet,
 
-Petra Marks -van Geuns
+${inst.ondertekening || ''}
 vakantieboerderij de Broekhof
-info@debroekhof.nl
-06-19744470`;
+${inst.email_info || 'info@debroekhof.nl'}
+${inst.telefoon || ''}`;
 
   // Knoppen uitschakelen
   // Schakel verwerk-knop uit tijdens verwerking
@@ -598,7 +600,7 @@ info@debroekhof.nl
       const resp = await beheerApi('proxy.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ actie: 'genereerPdf', templateId: DOCS_TEMPLATE_ID, bestandsnaam, placeholders })
+        body: JSON.stringify({ actie: 'genereerPdf', templateId: 'app', bestandsnaam, placeholders })
       });
       const json = await resp.json();
       if (json.status !== 'ok') throw new Error(json.message);
@@ -637,7 +639,7 @@ info@debroekhof.nl
         body: JSON.stringify({
           actie: scriptActie,
           rijnr: bewerkRijnr || null,
-          rij, templateId: DOCS_TEMPLATE_ID, bestandsnaam, placeholders,
+          rij, templateId: 'app', bestandsnaam, placeholders,
           emailAan,
           emailTekst,
         })
@@ -2004,7 +2006,6 @@ function setBoekFilter(f) {
 // ── Huurovereenkomst PDF via Apps Script ─────────────────────────────────
 // Apps Script maakt kopie van Google Docs template, vult placeholders in,
 // exporteert als PDF en stuurt de download-URL terug.
-const DOCS_TEMPLATE_ID = '1Q9IOTnd2Ze5BgRki8sMN9G_S8hwoDYYxg02ThqYXF-w';
 
 async function genereerHuurovereenkomst() {
   const g = id => document.getElementById(id).value.trim();
@@ -2079,7 +2080,7 @@ async function genereerHuurovereenkomst() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         actie: 'genereerPdf',
-        templateId: DOCS_TEMPLATE_ID,
+        templateId: 'app',
         bestandsnaam,
         placeholders
       })

@@ -184,16 +184,36 @@
     const { data } = await sb.auth.getSession();
     const token = data.session && data.session.access_token;
     if (!token) throw new NietIngelogd();
-    const res = await fetch('/api/' + naam, {
+    const res = await fetch('/api/actie', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify(payload || {}),
+      body: JSON.stringify(Object.assign({}, payload, { actie: naam })),
     });
     if (res.status === 401) throw new NietIngelogd();
     if (res.status === 404) return { status: 'error', message: 'Deze functie is nog niet beschikbaar in de nieuwe app.' };
     let json;
     try { json = await res.json(); } catch { json = { status: 'error', message: 'HTTP ' + res.status }; }
     return json;
+  }
+
+  // ── Huurovereenkomst (PDF in de browser, opslag in Supabase) ─────────
+  const BUCKET = 'huurovereenkomsten';
+
+  async function maakEnBewaarPdf(bestandsnaam, placeholders) {
+    const blob = window.maakHuurovereenkomstPdf(placeholders || {}, window.BROEKHOF.instellingen);
+    const veilig = String(bestandsnaam || 'Huurovereenkomst').replace(/[^A-Za-z0-9._ -]/g, '_').trim();
+    const pad = `${new Date().getFullYear()}/${veilig}.pdf`;
+    const { error } = await sb.storage.from(BUCKET).upload(pad, blob, { contentType: 'application/pdf', upsert: true });
+    if (error) throw new Error('PDF opslaan mislukt: ' + error.message);
+    return { blob, pad };
+  }
+
+  async function verstuurBevestiging(boekingId, d) {
+    const { pad } = await maakEnBewaarPdf(d.bestandsnaam, d.placeholders);
+    return roepFunctie('verwerk-boeking', {
+      boekingId, opslagpad: pad, bestandsnaam: d.bestandsnaam,
+      emailAan: d.emailAan, emailTekst: d.emailTekst, nuki: !!d.nuki,
+    });
   }
 
   // ── Acties ───────────────────────────────────────────────────────────
@@ -222,20 +242,14 @@
       const { error } = await sb.from('boekingen').update(record).eq('id', id);
       dbFout(error);
       if (!d.templateId) return ok();
-      return roepFunctie('verwerk-boeking', {
-        boekingId: id, bestandsnaam: d.bestandsnaam, placeholders: d.placeholders,
-        emailAan: d.emailAan, emailTekst: d.emailTekst,
-      });
+      return verstuurBevestiging(id, d);
     },
 
     async opslaanEnVersturen(d) {
       const record = rijNaarRecord(d.rij);
       const { data, error } = await sb.from('boekingen').insert(record).select('id').single();
       dbFout(error);
-      return roepFunctie('verwerk-boeking', {
-        boekingId: data.id, bestandsnaam: d.bestandsnaam, placeholders: d.placeholders,
-        emailAan: d.emailAan, emailTekst: d.emailTekst, nuki: true,
-      });
+      return verstuurBevestiging(data.id, Object.assign({}, d, { nuki: true }));
     },
 
     async verwijderBoeking({ rijnr }) {
@@ -299,7 +313,10 @@
       return ok();
     },
 
-    genereerPdf: d => roepFunctie('genereer-pdf', d),
+    async genereerPdf(d) {
+      const { blob } = await maakEnBewaarPdf(d.bestandsnaam, d.placeholders);
+      return ok({ pdfUrl: URL.createObjectURL(blob), naam: d.bestandsnaam + '.pdf' });
+    },
     legVastNuki: d => roepFunctie('nuki', d),
     stuurOverzicht: () => roepFunctie('mail', { soort: 'overzicht' }),
     informeerSleutelbeheerder: d => roepFunctie('mail', { soort: 'sleutelbeheerder', naam: d.naam, aankomst: d.aankomst }),
