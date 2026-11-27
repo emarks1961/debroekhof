@@ -59,7 +59,18 @@ Alleen ingelogde accounts die in de tabel `beheerders` staan krijgen toegang
 3. **Domain management**: voeg `beheer.debroekhof.app` toe en zet bij Strato een
    CNAME-record `beheer` naar het Netlify-adres.
 
-### 4. Micazu-mails (Apps Script)
+### 4. Micazu-mails via Resend (zonder Gmail)
+
+1. **Resend → Emails → Receiving**: zet een ontvangstadres aan (`…@<id>.resend.app`).
+2. **Resend → Webhooks → Add webhook**: URL `https://beheer.debroekhof.app/api/micazu-inbound`
+   (of het Netlify-adres), event `email.received`. Zet het ondertekeningsgeheim als
+   `RESEND_WEBHOOK_SECRET` in Netlify en publiceer opnieuw.
+3. `RESEND_API_KEY` moet **Full access** hebben, anders kan de app de ontvangen mail niet lezen.
+4. Zet in Micazu het e-mailadres voor boekingsmeldingen op bijvoorbeeld
+   `micazu@<id>.resend.app`. De app maakt de boeking aan en stuurt info@ een melding met
+   de oorspronkelijke mail. Andere mails op dat adres worden naar info@ doorgestuurd.
+
+### 4b. Micazu-mails via Gmail (oude manier, Apps Script)
 
 Het automatisch inlezen van Micazu-mails blijft in Google Apps Script, omdat het
 Gmail moet lezen. Vervang in het bestaande Apps Script-project `micazu.gs` door
