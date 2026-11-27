@@ -49,4 +49,8 @@ notes.versies.unshift({
 });
 
 writeFileSync(BESTAND, JSON.stringify(notes, null, 2) + '\n');
-console.log(`Versie ${versie} toegevoegd. Herschrijf de concept-regels in public/releasenotes.json en commit als "Release ${versie}".`);
+console.log(`Versie ${versie} toegevoegd. Herschrijf de concept-regels in public/releasenotes.json in begrijpelijk Nederlands en commit als "Release ${versie}".`);
+const handleidingGewijzigd = vorige.commit && git(`diff --name-only ${vorige.commit} -- public/handleiding.html`);
+if (!handleidingGewijzigd) {
+  console.log('Let op: public/handleiding.html is sinds de vorige versie niet gewijzigd. Verandert er iets voor de gebruiker? Werk dan de handleiding (Help) bij.');
+}

@@ -1,11 +1,22 @@
 {
   "versies": [
     {
-      "versie": "2.0.0.0",
+      "versie": "2.0.1.0",
       "datum": "2026-11-27",
       "commit": "",
       "wijzigingen": [
-        "Start van de nieuwe beheerapp op Netlify met Supabase"
+        "Onderaan het scherm staat nu Help. Daar vind je een korte handleiding van de app, die bij elke nieuwe versie wordt bijgewerkt.",
+        "Onder Versie lees je voortaan bij elke nieuwe versie in gewone taal wat er is veranderd."
+      ]
+    },
+    {
+      "versie": "2.0.0.0",
+      "datum": "2026-11-27",
+      "commit": "3421e690d3b4e5ba7b3deb632d0b82c226b3cbe0",
+      "wijzigingen": [
+        "De nieuwe beheerapp is gestart. Boekingen en betalingen staan nu in een eigen beveiligde database in plaats van in de Google Sheet.",
+        "Je logt in met je eigen e-mailadres en wachtwoord.",
+        "De huurovereenkomst (PDF) maakt de app nu zelf."
       ]
     }
   ]
