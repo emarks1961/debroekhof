@@ -1,9 +1,19 @@
 {
   "versies": [
     {
-      "versie": "2.0.2.2",
+      "versie": "2.0.3.0",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "Bij een Micazu-boeking neemt de app nu alle prijsregels over: kinderbedje, bed- en keukenlinnen tellen mee als extra's, en een korting zoals last minute gaat van de huurprijs af. Het totaal is altijd gelijk aan de totaalprijs van Micazu.",
+        "Bij zo'n boeking staat in de notitie de volledige Micazu-prijsopbouw en hoeveel volwassenen, kinderen en baby's er komen.",
+        "Bij de boekingen zie je nu ook het bericht van de huurder en de notitie."
+      ]
+    },
+    {
+      "versie": "2.0.2.2",
+      "datum": "2026-11-27",
+      "commit": "0e99451bd2daa12955e713d88cf71775def9aa07",
       "wijzigingen": [
         "Micazu-mails worden beter gelezen: de app probeert zowel de tekst- als de opgemaakte versie van de mail en herkent meer schrijfwijzen van datums.",
         "Lukt het inlezen toch niet, dan staat in de waarschuwingsmail ook welke tekst de app heeft gelezen, zodat de oorzaak snel te vinden is."

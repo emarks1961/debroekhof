@@ -116,6 +116,8 @@
       checkOut:    tijd(r.checkout),
       mailHuurder: !!r.mail_huurder,
       bron:        r.bron === 'micazu-aanvullen' ? 'Micazu – aanvullen' : tekst(r.bron),
+      vraag:       tekst(r.vraag_huurder),
+      notitie:     tekst(r.notitie),
     };
   }
 
