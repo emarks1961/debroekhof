@@ -16,6 +16,7 @@
 //    Al gemigreerde boekingen eerst weghalen en opnieuw beginnen:
 //      node scripts/migratie/migreer.mjs --uitvoeren --opnieuw
 //
+// Zonder sleutels: --sql schrijft data/overzetten.sql om in de Supabase SQL Editor te plakken.
 // Rijen kun je overslaan met --sla-over=5,12 (rijnummers uit het rapport).
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -255,6 +256,42 @@ const rapportPad = join(MAP, 'rapport.md');
 writeFileSync(rapportPad, rapport);
 console.log(`Rapport geschreven: ${rapportPad}`);
 console.log(`${boekingen.length} boekingen, ${betaalStatus.length} betaalregels, ${meldingen.length} meldingen.`);
+
+// ── SQL-bestand (alternatief voor --uitvoeren: plakken in de Supabase SQL Editor) ──
+if (args.includes('--sql')) {
+  const lit = v => (v === null || v === undefined ? 'null'
+    : typeof v === 'number' ? String(v)
+    : typeof v === 'boolean' ? String(v)
+    : `'${String(v).replace(/'/g, "''")}'`);
+  let sql = `-- Overzetten van ${boekingen.length - SLA_OVER.size} boekingen uit de Google Sheet.\n`;
+  sql += `-- Gemaakt met scripts/migratie/migreer.mjs --sql. Plak dit in de Supabase SQL Editor en klik Run.\n`;
+  sql += `-- Draai je het nog eens, dan worden eerder overgezette boekingen eerst vervangen.\n\nbegin;\n\n`;
+  sql += `delete from public.boekingen where legacy_rijnr is not null;\n\n`;
+  for (const b of boekingen) {
+    if (SLA_OVER.has(b.legacy_rijnr) || b.vertrek <= b.aankomst) continue;
+    const { _pdf, _pdfNaam, ...record } = b;
+    const kol = Object.keys(record);
+    sql += `insert into public.boekingen (${kol.join(', ')})\nvalues (${kol.map(k => lit(record[k])).join(', ')});\n`;
+    if (_pdf) {
+      sql += `insert into public.documenten (boeking_id, bestandsnaam, drive_file_id)\n`
+        + `select id, ${lit(_pdfNaam)}, ${lit(_pdf)} from public.boekingen where legacy_rijnr = ${b.legacy_rijnr};\n`;
+    }
+    sql += '\n';
+  }
+  sql += `-- Betaalstatus uit "Financieel status" (de betaalregels zelf maakt de database aan)\n`;
+  for (const s of betaalStatus) {
+    if (SLA_OVER.has(s.rijnr)) continue;
+    const d = s.datum ? `date ${lit(s.datum)}` : 'null';
+    sql += `update public.betalingen p set betaald = ${s.betaald}, notitie = ${lit(s.notitie)}, verborgen = ${s.verborgen},\n`
+      + `  vervaldatum = coalesce(${d}, p.vervaldatum), vervaldatum_handmatig = coalesce(${d} <> p.vervaldatum, false)\n`
+      + `from public.boekingen b where p.boeking_id = b.id and b.legacy_rijnr = ${s.rijnr} and p.soort = '${s.soort}';\n`;
+  }
+  sql += `\ncommit;\n\n-- Controle\nselect count(*) as boekingen from public.boekingen where legacy_rijnr is not null;\n`
+    + `select count(*) as betaald from public.betalingen where betaald;\n`;
+  const sqlPad = join(MAP, 'overzetten.sql');
+  writeFileSync(sqlPad, sql);
+  console.log(`SQL geschreven: ${sqlPad}`);
+}
 
 if (!UITVOEREN) {
   console.log('Proefdraai: er is niets overgezet. Gebruik --uitvoeren om echt over te zetten.');

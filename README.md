@@ -81,6 +81,9 @@ Zie `scripts/migratie/migreer.mjs`. Kort:
    meldingen en de koppeling van betaalstatus aan boekingen. Controleer die.
 3. `SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… node scripts/migratie/migreer.mjs --uitvoeren`
 
+Zonder sleutels op je computer: `node scripts/migratie/migreer.mjs --sql` schrijft
+`data/overzetten.sql`. Plak dat in de Supabase SQL Editor en klik Run.
+
 Rijen overslaan (bv. testboekingen): `--sla-over=4,12`.
 
 ## Geheimen
