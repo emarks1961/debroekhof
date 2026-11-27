@@ -328,6 +328,7 @@
       return ok({ pdfUrl: URL.createObjectURL(blob), naam: d.bestandsnaam + '.pdf' });
     },
     legVastNuki: d => roepFunctie('nuki', d),
+    onedriveKoppelen: () => roepFunctie('onedrive-koppelen', {}),
     stuurOverzicht: () => roepFunctie('mail', { soort: 'overzicht' }),
     informeerSleutelbeheerder: d => roepFunctie('mail', { soort: 'sleutelbeheerder', naam: d.naam, aankomst: d.aankomst }),
     stuurHerinneringHandmatig: d => roepFunctie('mail', {

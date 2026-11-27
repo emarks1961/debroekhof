@@ -96,7 +96,7 @@
         kvk ? `KvK nummer: ${kvk}` : '',
       ].filter(Boolean);
       regels.forEach((t, i) => doc.text(t, KOP_L, 25.4 + i * 6.1));
-      if (logo) doc.addImage(logo, soort(logo), 146, 21.6, 36.5, 25.5);
+      if (logo) doc.addImage(logo, soort(logo), 143.5, 22, 39.5, 26.3);
     }
     function voettekst(nr) {
       lettertype(false, 7.5);
