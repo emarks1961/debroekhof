@@ -1,9 +1,17 @@
 {
   "versies": [
     {
-      "versie": "2.0.9.0",
+      "versie": "2.0.10.0",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "Onderaan de herinneringsmail staat nu de knop 'Ik wil graag nog extra's bestellen'. De huurder krijgt dan een kant-en-klare mail aan info met onderwerp 'Aanvraag extra's', de naam en datum van de boeking, en een lijstje extra's om aantallen of een toelichting in te vullen."
+      ]
+    },
+    {
+      "versie": "2.0.9.0",
+      "datum": "2026-11-27",
+      "commit": "98187790a0bde4ee3a4a3d2bf7d00537f5e68330",
       "wijzigingen": [
         "Alle mails die de app verstuurt beginnen nu met het logo van de Broekhof, met daarnaast de titel van de mail en eronder een dun goudkleurig lijntje."
       ]

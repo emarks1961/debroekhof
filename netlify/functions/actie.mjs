@@ -218,7 +218,35 @@ function aankomstMailHtml(b, inst) {
     ${ondertekeningHtml(inst)}
     <hr style="border:none;border-top:1px solid #ddd;margin:20px 0">
     ${boekingKaartHtml(b, inst)}
+    ${extrasKnopHtml(b, inst)}
   </body></html>`;
+}
+
+// Onderaan de herinneringsmail: knop die een ingevulde mail opent om extra's aan te vragen
+function extrasKnopHtml(b, inst) {
+  const naam = [b.voornaam, b.achternaam].filter(Boolean).join(' ');
+  const onderwerp = `Aanvraag extra's - ${naam} (${nl(b.aankomst)})`;
+  const tekst = [
+    `Boeking: ${naam}, ${nl(b.aankomst)} t/m ${nl(b.vertrek)}`,
+    '',
+    'Graag ontvang ik de volgende extra\'s (vul het aantal en/of een toelichting in):',
+    '',
+    'Bedlinnen (aantal personen): ',
+    'Keukenlinnen (aantal): ',
+    'Kinderbed (aantal): ',
+    'Extra personen (aantal): ',
+    'Extra huisdieren (aantal): ',
+    'Overig: ',
+    '',
+    'Toelichting: ',
+    '',
+  ].join('\r\n');
+  const href = `mailto:${inst.email_info || 'info@debroekhof.nl'}?subject=${encodeURIComponent(onderwerp)}&body=${encodeURIComponent(tekst)}`;
+  return `
+    <div style="margin:24px 0 8px 0;padding:16px;border-top:1px solid #ddd;text-align:center">
+      <p style="margin:0 0 12px 0">Geef s.v.p. uw wensen voor eventuele extra's door, wij zullen u zo spoedig mogelijk een antwoord sturen.</p>
+      <a href="${esc(href)}" style="display:inline-block;padding:12px 22px;background:#8c6d3f;color:#ffffff;text-decoration:none;font-weight:bold;border-radius:4px">Ik wil graag nog extra's bestellen</a>
+    </div>`;
 }
 
 function overzichtHtml(boekingen, inst, intro = '', nieuw = new Set()) {
