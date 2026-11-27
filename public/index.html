@@ -335,9 +335,13 @@ function valideerTelefoon(el) {
   if (!v) { clearVeldStatus(el, 'hint-telefoon'); return true; }
 
   const land = document.getElementById('nb-land').value.trim().toLowerCase();
-  const isNL = land === 'nederland' || land === 'netherlands' || land === 'nl' || land === '';
+  // +31 / 0031 is altijd een Nederlands nummer: omzetten naar 06-12345678
+  const nlInt = v.replace(/[\s\-\(\)]/g, '').match(/^(?:\+|00)31(?:0)?(\d{9})$/);
+  if (nlInt) el.value = '0' + nlInt[1];
+  const isNL = !!nlInt || land === 'nederland' || land === 'netherlands' || land === 'nl' || land === '';
 
   if (isNL) {
+    const v = el.value.trim();
     // NL: 06-XXXXXXXX of 0X-XXXXXXX of 0XX-XXXXXXX (10 cijfers totaal, begint met 0)
     const digits = v.replace(/[\s\-]/g, '');
     if (/^0\d{9}$/.test(digits)) {
@@ -372,11 +376,25 @@ function valideerTelefoon(el) {
 
 // E-mail validatie
 function valideerEmail(el) {
-  const v = el.value.trim();
+  const v = el.value.trim().toLowerCase();
+  el.value = v;
   if (!v) { clearVeldStatus(el, 'hint-email'); return true; }
   const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
   setVeldStatus(el, 'hint-email', ok, ok ? '✓ Geldig e-mailadres' : 'Ongeldig e-mailadres (bijv. naam@voorbeeld.nl)');
   return ok;
+}
+
+// Plaatsnaam: elk woord met een hoofdletter ("oud zuilen" → "Oud Zuilen"),
+// tussenwoorden klein ("Alphen aan den Rijn"), 's-Hertogenbosch en IJ goed
+function formatPlaats(el) {
+  const klein = new Set(['aan', 'den', 'de', 'der', 'op', 'het', 'en', 'bij', 'in', 'van', 'ter', 'te']);
+  el.value = el.value.trim().replace(/\s+/g, ' ').toLowerCase()
+    .replace(/[^\s\-]+/g, (w, i) => {
+      if (i > 0 && klein.has(w)) return w;
+      if (/^'s$|^'t$/.test(w)) return w;
+      if (w.startsWith('ij')) return 'IJ' + w.slice(2);
+      return w.charAt(0).toUpperCase() + w.slice(1);
+    });
 }
 
 // Postcode: NL = 1234 AB, buitenland = vrij
@@ -745,10 +763,16 @@ async function vulAanUitMicazuPdf(input) {
     vul('nb-telefoon', g.telefoon, 'telefoon');
     vul('nb-email', g.email, 'e-mail');
     vul('nb-aanhef', raadAanhef(el('nb-voornaam').value), 'aanhef');
+    // Opmaak gelijktrekken: 06-12345678, 1234 AB, Plaatsnaam, e-mail in kleine letters
+    if (el('nb-telefoon').value) valideerTelefoon(el('nb-telefoon'));
+    if (el('nb-postcode').value) valideerPostcode(el('nb-postcode'));
+    if (el('nb-plaats').value) formatPlaats(el('nb-plaats'));
+    const emailOk = !el('nb-email').value || valideerEmail(el('nb-email'));
     el('nb-pdf-hint').style.display = 'none';
     succEl.innerHTML = gevuld.length
       ? `✓ Aangevuld uit Micazu: ${gevuld.join(', ')}.<br><span style="font-weight:400">Controleer de gegevens (vooral de aanhef) en klik daarna op opslaan.</span>`
       : '✓ Alle gegevens uit de PDF stonden al in de boeking.';
+    if (!emailOk) succEl.innerHTML += '<br><span style="color:#c62828">⚠ Het e-mailadres lijkt niet te kloppen, controleer het.</span>';
     succEl.style.display = 'block';
     succEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
   } catch (e) {
@@ -1247,7 +1271,7 @@ select.nb-inp{appearance:auto}
       </div>
     </div>
     <div class="nb-rij">
-      <div class="nb-veld"><label class="nb-lbl">Plaats</label><input class="nb-inp" type="text" id="nb-plaats"></div>
+      <div class="nb-veld"><label class="nb-lbl">Plaats</label><input class="nb-inp" type="text" id="nb-plaats" onblur="formatPlaats(this)"></div>
       <div class="nb-veld"><label class="nb-lbl">Land</label><input class="nb-inp" type="text" id="nb-land" value="Nederland"></div>
     </div>
   </div>

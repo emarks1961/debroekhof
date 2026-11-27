@@ -1,9 +1,19 @@
 {
   "versies": [
     {
-      "versie": "2.0.5.0",
+      "versie": "2.0.5.1",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "Bij het inlezen van de Micazu-PDF wordt nu de juiste vertrekdatum overgenomen, in plaats van de geboortedatum.",
+        "Een Nederlands telefoonnummer wordt automatisch 06-12345678, ook als het als +31 binnenkomt.",
+        "Postcode en plaatsnaam worden netjes geschreven (1234 AB, Oud Zuilen), en een e-mailadres wordt in kleine letters gezet en gecontroleerd."
+      ]
+    },
+    {
+      "versie": "2.0.5.0",
+      "datum": "2026-11-27",
+      "commit": "397693e2af3041851702a0fcf36f2e396fe7e457",
       "wijzigingen": [
         "In de mail over een nieuwe Micazu-boeking kies je nu tussen 'Automatisch aanvullen met de PDF' en 'Zelf aanvullen'; beide knoppen openen de boeking direct in de beheerapp.",
         "Met het bestand 'Boeking details' dat je in Micazu downloadt, vult de app adres, postcode, plaats, telefoon en e-mail van de huurder vanzelf in.",

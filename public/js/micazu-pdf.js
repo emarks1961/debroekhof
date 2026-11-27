@@ -76,11 +76,15 @@
     g.voornaam = delen.slice(0, 1).join(' ');
     g.achternaam = delen.slice(1).join(' ');
 
-    const datums = vlak.map(datumIso).filter(Boolean);
+    // Aankomst en vertrek staan tussen "Aankomstdatum" en "Wie komt er?"; ze kunnen op één
+    // regel staan. Verderop staat ook de geboortedatum, die mag niet als vertrek gelden.
     const j = vlak.findIndex(r => /aankomstdatum/i.test(r));
-    const naAankomst = j >= 0 ? vlak.slice(j).map(datumIso).filter(Boolean) : datums;
-    g.aankomst = naAankomst[0] || '';
-    g.vertrek = naAankomst[1] || '';
+    const eind = i > j ? i : vlak.length;
+    const datums = vlak.slice(Math.max(j, 0), eind)
+      .filter(r => !/geboren|geboorte/i.test(r))
+      .flatMap(r => [...r.matchAll(/\d{1,2}-\d{1,2}-\d{4}/g)].map(m => datumIso(m[0])));
+    g.aankomst = datums[0] || '';
+    g.vertrek = datums[1] || '';
 
     g.adres = veld('Adres');
     const pc = veld('Postcode');                    // "3611AA, Oud Zuilen"
