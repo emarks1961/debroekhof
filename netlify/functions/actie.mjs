@@ -8,12 +8,14 @@
 //     verwerk-boeking  bevestiging + PDF mailen (en eventueel Nuki-code)
 //     pdf-link         tijdelijke downloadlink voor een opgeslagen PDF
 //     mail             soort: overzicht | sleutelbeheerder | aankomst
+//     onedrive-koppelen  inlogadres van Microsoft om OneDrive te koppelen
 //   Intern (header x-broekhof-geheim):
 //     dagelijks        aankomstmails + op maandag de betaalwaarschuwing (INTERN_GEHEIM)
 //     micazu-import    nieuwe Micazu-boeking uit micazu.gs (MICAZU_GEHEIM)
 //
 //   POST /api/micazu-inbound  webhook "email.received" van Resend (RESEND_WEBHOOK_SECRET):
 //     leest de ontvangen Micazu-mail, maakt de boeking aan en mailt info@ een melding.
+//   GET  /api/onedrive-koppelen  terugkeer na inloggen bij Microsoft (OneDrive koppelen)
 //
 // Alleen ingebouwde Node-modules en fetch; alles in dit ene bestand.
 // ═══════════════════════════════════════════════════════════════════════
@@ -287,10 +289,106 @@ async function maakNukiCode({ naam, code, aankomst, vertrek, checkIn, checkOut }
   return { status: 'error', message: `Nuki API fout ${res.status}: ${(await res.text()).slice(0, 200)}` };
 }
 
+// ── OneDrive (persoonlijk Microsoft-account, Microsoft Graph) ─────────
+// Bij het versturen van een bevestiging gaat de PDF ook naar OneDrive, in
+// <ONEDRIVE_MAP>/<jaar van aankomst>. Eenmalig koppelen via de beheerapp;
+// de refresh-token staat in de tabel koppelingen (alleen voor de server).
+const MS_LOGIN = 'https://login.microsoftonline.com/consumers/oauth2/v2.0';
+const GRAPH = 'https://graph.microsoft.com/v1.0';
+const ONEDRIVE_SCOPE = 'offline_access Files.ReadWrite';
+const onedriveTerug = () => `${(env('URL') || '').replace(/\/$/, '')}/api/onedrive-koppelen`;
+const onedriveActief = () => !!(env('ONEDRIVE_CLIENT_ID') && env('ONEDRIVE_CLIENT_SECRET'));
+const stateHandtekening = ts => createHmac('sha256', env('SUPABASE_SERVICE_ROLE_KEY')).update(`onedrive.${ts}`).digest('hex');
+
+function onedriveInlogUrl() {
+  if (!onedriveActief()) throw new Fout('OneDrive is nog niet ingesteld (ONEDRIVE_CLIENT_ID en ONEDRIVE_CLIENT_SECRET ontbreken in Netlify)');
+  const ts = Date.now();
+  const q = new URLSearchParams({
+    client_id: env('ONEDRIVE_CLIENT_ID'), response_type: 'code', redirect_uri: onedriveTerug(),
+    scope: ONEDRIVE_SCOPE, response_mode: 'query', state: `${ts}.${stateHandtekening(ts)}`, prompt: 'select_account',
+  });
+  return `${MS_LOGIN}/authorize?${q}`;
+}
+
+async function onedriveToken(velden) {
+  const res = await fetch(`${MS_LOGIN}/token`, {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: env('ONEDRIVE_CLIENT_ID'), client_secret: env('ONEDRIVE_CLIENT_SECRET'),
+      redirect_uri: onedriveTerug(), scope: ONEDRIVE_SCOPE, ...velden,
+    }),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || !json.access_token) throw new Fout(`Microsoft: ${json.error_description || json.error || res.status}`);
+  if (json.refresh_token) {
+    await db('koppelingen?on_conflict=naam', {
+      method: 'POST', prefer: 'resolution=merge-duplicates',
+      body: { naam: 'onedrive', gegevens: { refresh_token: json.refresh_token }, bijgewerkt: new Date().toISOString() },
+    });
+  }
+  return json.access_token;
+}
+
+async function onedriveKoppelenTerug(req) {
+  const u = new URL(req.url);
+  const pagina = (titel, tekst) => new Response(
+    `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(titel)}</title>
+    <div style="font-family:Arial,sans-serif;max-width:480px;margin:60px auto;padding:0 16px;line-height:1.6">
+    <h2 style="color:#8c6d3f">${esc(titel)}</h2><p>${tekst}</p><p><a href="/">Terug naar de beheerapp</a></p></div>`,
+    { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+  const [ts, sig] = String(u.searchParams.get('state') || '').split('.');
+  const geldig = ts && sig && Date.now() - Number(ts) < 30 * 60 * 1000 && sig.length === 64
+    && timingSafeEqual(Buffer.from(sig), Buffer.from(stateHandtekening(ts)));
+  if (!geldig) return pagina('Koppelen mislukt', 'De link is verlopen of ongeldig. Start het koppelen opnieuw vanuit de beheerapp.');
+  if (u.searchParams.get('error')) return pagina('Koppelen mislukt', esc(u.searchParams.get('error_description') || u.searchParams.get('error')));
+  try {
+    await onedriveToken({ grant_type: 'authorization_code', code: u.searchParams.get('code') || '' });
+  } catch (e) {
+    return pagina('Koppelen mislukt', esc(e.message));
+  }
+  return pagina('OneDrive gekoppeld ✓', `Voortaan wordt elke verstuurde bevestiging ook opgeslagen in OneDrive, map <b>${esc(env('ONEDRIVE_MAP') || 'De Broekhof')}</b>, in de map met het jaartal van aankomst.`);
+}
+
+// PDF opslaan in <map>/<jaar>; een bestaande jaarmap (bv. "2027" of "Boekingen 2027") wordt hergebruikt
+async function onedriveOpslaan(naam, inhoud, jaar) {
+  const rij = (await db('koppelingen?naam=eq.onedrive&select=gegevens'))[0];
+  if (!rij?.gegevens?.refresh_token) throw new Fout('OneDrive is nog niet gekoppeld (onderaan de beheerapp: OneDrive koppelen)');
+  const token = await onedriveToken({ grant_type: 'refresh_token', refresh_token: rij.gegevens.refresh_token });
+  const graph = async (pad, opt = {}) => {
+    const res = await fetch(`${GRAPH}${pad}`, { ...opt, headers: { Authorization: `Bearer ${token}`, ...(opt.headers || {}) } });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) { const e = new Fout(`OneDrive: ${json.error?.message || res.status}`); e.status = res.status; throw e; }
+    return json;
+  };
+  const map = (env('ONEDRIVE_MAP') || 'De Broekhof').split('/').map(encodeURIComponent).join('/');
+  const nieuweMap = (ouder, naam) => graph(`${ouder}/children`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: naam, folder: {}, '@microsoft.graph.conflictBehavior': 'fail' }),
+  });
+  let kinderen = [];
+  try {
+    kinderen = (await graph(`/me/drive/root:/${map}:/children?$select=id,name,folder&$top=200`)).value || [];
+  } catch (e) {
+    if (e.status !== 404) throw e;
+    await nieuweMap('/me/drive/root', decodeURIComponent(map)); // hoofdmap bestaat nog niet
+  }
+  const mappen = kinderen.filter(k => k.folder);
+  let jaarmap = mappen.find(k => k.name.trim() === String(jaar)) || mappen.find(k => k.name.includes(String(jaar)));
+  if (!jaarmap) jaarmap = await nieuweMap(`/me/drive/root:/${map}:`, String(jaar));
+  await graph(`/me/drive/items/${jaarmap.id}:/${encodeURIComponent(naam)}:/content?@microsoft.graph.conflictBehavior=replace`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/pdf' }, body: inhoud,
+  });
+  return `${decodeURIComponent(map)}/${jaarmap.name}`;
+}
+
 // ── Acties voor beheerders ───────────────────────────────────────────
 const beheerActies = {
   async nuki(d) {
     return maakNukiCode(d);
+  },
+
+  async 'onedrive-koppelen'() {
+    return { status: 'ok', url: onedriveInlogUrl() };
   },
 
   async 'pdf-link'({ opslagpad, bestandsnaam }) {
@@ -317,6 +415,17 @@ const beheerActies = {
       soort: 'bevestiging', boekingId: b.id,
     }, inst);
 
+    // Ook in OneDrive bewaren (als dat is ingesteld); een fout blokkeert het versturen niet
+    let onedrive = null;
+    if (onedriveActief()) {
+      try {
+        onedrive = { status: 'ok', map: await onedriveOpslaan(naam, pdf, String(b.aankomst).slice(0, 4)) };
+      } catch (e) {
+        console.error('[onedrive]', e);
+        onedrive = { status: 'error', message: e.message };
+      }
+    }
+
     let nukiResultaat = null;
     if (nuki && b.toegangscode) {
       nukiResultaat = await maakNukiCode({
@@ -324,7 +433,7 @@ const beheerActies = {
         checkIn: uur(b.checkin), checkOut: uur(b.checkout),
       });
     }
-    return { status: 'ok', pdfUrl: await opslagLink(opslagpad, naam), naam, nuki: nukiResultaat };
+    return { status: 'ok', pdfUrl: await opslagLink(opslagpad, naam), naam, nuki: nukiResultaat, onedrive };
   },
 
   async mail(d, inst) {
@@ -764,6 +873,7 @@ function aanvullenBlok(id) {
 
 // ── Ingang ───────────────────────────────────────────────────────────
 export default async (req) => {
+  if (req.method === 'GET' && new URL(req.url).pathname.endsWith('/onedrive-koppelen')) return onedriveKoppelenTerug(req);
   if (req.method !== 'POST') return fout('Alleen POST', 405);
   const ruw = await req.text();
   if (new URL(req.url).pathname.endsWith('/micazu-inbound')) {
@@ -798,4 +908,4 @@ export default async (req) => {
   }
 };
 
-export const config = { path: ['/api/actie', '/api/micazu-inbound'] };
+export const config = { path: ['/api/actie', '/api/micazu-inbound', '/api/onedrive-koppelen'] };

@@ -1,9 +1,19 @@
 {
   "versies": [
     {
-      "versie": "2.0.6.0",
+      "versie": "2.0.7.0",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "In het briefhoofd van de bevestiging staat weer de tekening van de Broekhof, zoals in het oude Google Doc.",
+        "Na het versturen van een bevestiging wordt de PDF ook opgeslagen in OneDrive, in de map De Broekhof en daarin de map met het jaartal van aankomst. Dit werkt nadat je OneDrive eenmalig hebt gekoppeld (onderaan de app: OneDrive koppelen).",
+        "In de groene melding na het versturen zie je of het opslaan in OneDrive gelukt is."
+      ]
+    },
+    {
+      "versie": "2.0.6.0",
+      "datum": "2026-11-27",
+      "commit": "8d778cc1b7121c3fd95c31077315f33da151a08c",
       "wijzigingen": [
         "De reserveringsbevestiging en huurovereenkomst zien er weer uit als het oude Google Doc: briefhoofd met het logo van de Broekhof, bankrekening en KvK-nummer, de handtekening, uitgevulde tekst en onderaan de documentnaam met paginanummer.",
         "In de huurovereenkomst staan de belangrijke bedragen en datums vetgedrukt, zoals in het origineel; Extra's en Borg verschijnen alleen als ze van toepassing zijn."
