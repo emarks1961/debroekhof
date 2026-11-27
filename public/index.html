@@ -2008,7 +2008,9 @@ function renderBoekingen(boekingen) {
         ${schoonmaak ? `<div class="boek-row"><span class="ico">💶</span><span class="lbl">Schoonmaak</span><span class="val">${schoonmaak}</span></div>` : ''}
         <div class="boek-row"><span class="ico">🚪</span><span class="lbl">Toegangscode</span><span class="val" style="font-weight:700;letter-spacing:.05em">${code||'—'}</span></div>
         ${opmerking ? `<div class="boek-warn">⚠️ ${opmerking}</div>` : ''}
-        ${/aanvullen/i.test(b.bron || '') ? `<div class="boek-warn">📥 Automatisch ingelezen via Micazu — vul aanhef, contactgegevens, keukenlinnen en borg aan via ✏️ en sla op.</div>` : ''}
+        ${b.vraag ? `<div class="boek-row"><span class="ico">💬</span><span class="lbl">Bericht huurder</span><span class="val" style="font-size:.8rem;white-space:pre-line">${String(b.vraag).replace(/</g,'&lt;')}</span></div>` : ''}
+        ${b.notitie ? `<div class="boek-row"><span class="ico">📝</span><span class="lbl">Notitie</span><span class="val" style="font-size:.78rem;white-space:pre-line">${String(b.notitie).replace(/</g,'&lt;')}</span></div>` : ''}
+        ${/aanvullen/i.test(b.bron || '') ? `<div class="boek-warn">📥 Automatisch ingelezen via Micazu — vul aanhef, contactgegevens en borg aan via ✏️ en sla op.</div>` : ''}
       </div>
     </div>`;
   });

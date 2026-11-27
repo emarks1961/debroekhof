@@ -501,7 +501,7 @@ async function micazuImport(b, inst) {
       aanbetaling: Math.round(totaal - restant),
       land: 'Nederland', toegangscode: genereerToegangscode(),
       checkin: tijden.checkin || '16:00', checkout: tijden.checkout || '10:00',
-      bron: 'micazu-aanvullen', vraag_huurder: b.vraag || null,
+      bron: 'micazu-aanvullen', vraag_huurder: b.vraag || null, notitie: b.notitie || null,
     },
   });
   return { status: 'ok', resultaat: 'nieuw', id: rij.id };
@@ -598,13 +598,47 @@ function parseMicazuMail(tekst) {
   if (!achternaam) throw new Fout('achternaam niet gevonden');
   const personen = aantal('Aantal volwassenen', gegevens) + aantal('Aantal kinderen', gegevens) + aantal('Aantal baby', gegevens);
   const huisdieren = aantal('Huisdieren', gegevens);
-  const huur = micazuBedrag(val('Vakantiehuis', boeking));
-  const totaal = micazuBedrag(val('Totaalprijs', boeking));
   const schoonmaak = micazuBedrag(val('Eindschoonmaak', boeking)) || (90 + huisdieren * 10);
   const getal = s => { const m = String(s).match(/(\d+)/); return m ? parseInt(m[1], 10) : 0; };
   const bedlinnen = getal(val('Bedlinnen', boeking));
   const keukenlinnen = getal(val('Keukenlinnen', boeking));
-  const extras = totaal && huur ? Math.max(0, Math.round((totaal - huur) * 100) / 100) : (bedlinnen * 10 + keukenlinnen * 7);
+
+  // Prijsregels tussen "Vakantiehuis" en "Totaalprijs": huur, extra's (kinderbed,
+  // linnen, …) en kortingen (negatief, bv. "Last minute € -50,40").
+  const posten = [];
+  const vIdxHuis = regels.findIndex((r, i) => i >= zoek('Aankomst', boeking).index && /^vakantiehuis/i.test(r));
+  if (vIdxHuis >= 0) {
+    let label = null;
+    for (let i = vIdxHuis; i < regels.length && !/^totaalprijs/i.test(regels[i]); i++) {
+      const m = regels[i].match(/^(.*?)\s*€\s*(-?\s*[\d.,]+)\s*$/);
+      const bedragTekst = m && m[2].replace(/\s/g, '');
+      if (m && m[1] && !/^\d/.test(m[1])) posten.push({ label: m[1].replace(/[\t:]+$/, '').trim(), bedrag: micazuBedrag(bedragTekst) * (bedragTekst.startsWith('-') ? -1 : 1) });
+      else if (m && !m[1] && label) { posten.push({ label, bedrag: micazuBedrag(bedragTekst) * (bedragTekst.startsWith('-') ? -1 : 1) }); label = null; }
+      else if (!m && !/^\d/.test(regels[i]) && !/\(€/.test(regels[i])) label = regels[i];
+    }
+  }
+  const rond = n => Math.round(n * 100) / 100;
+  const huisPost = posten.find(p => /^vakantiehuis/i.test(p.label));
+  const huur = huisPost ? huisPost.bedrag : micazuBedrag(val('Vakantiehuis', boeking));
+  const kortingen = rond(posten.filter(p => p.bedrag < 0).reduce((t, p) => t + p.bedrag, 0));
+  const extraPosten = posten.filter(p => p !== huisPost && p.bedrag > 0);
+  let extras = rond(extraPosten.reduce((t, p) => t + p.bedrag, 0));
+  if (!posten.length) extras = bedlinnen * 10 + keukenlinnen * 7;
+  let totaal = micazuBedrag(val('Totaalprijs', boeking));
+  let huurprijs = rond((huur || 0) + kortingen);                // huur na korting
+  if (!totaal) totaal = rond(huurprijs + extras);
+  else if (Math.abs(huurprijs + extras - totaal) > 0.01) {
+    // Klopt de som niet met de Micazu-totaalprijs: die is leidend
+    if (totaal >= huurprijs) extras = rond(totaal - huurprijs);  // ontbrekende extra's
+    else huurprijs = rond(totaal - extras);                      // niet-vermelde korting
+  }
+
+  const euroNL = n => `€ ${n.toFixed(2).replace('.', ',')}`;
+  const volw = aantal('Aantal volwassenen', gegevens), kind = aantal('Aantal kinderen', gegevens), baby = aantal('Aantal baby', gegevens);
+  const notitie = [
+    posten.length ? 'Micazu-prijs: ' + posten.map(p => `${p.label} ${euroNL(p.bedrag)}`).join(' · ') + ` · totaal ${euroNL(totaal)}` : '',
+    `Gasten: ${volw} volwassene(n), ${kind} kind(eren), ${baby} baby('s)`,
+  ].filter(Boolean).join('\n');
   const vIdx = regels.findIndex(r => /^(vragen|bericht) van de huurder/i.test(r));
   let vraag = '';
   if (vIdx >= 0) {
@@ -613,7 +647,8 @@ function parseMicazuMail(tekst) {
   }
   return {
     aankomst, vertrek, voornaam, achternaam, personen, huisdieren, bedlinnen, keukenlinnen,
-    huurprijs: huur || (totaal - extras), extras, totaal: totaal || (huur + extras), schoonmaak, vraag,
+    huurprijs: huurprijs || rond(totaal - extras), extras, totaal, schoonmaak, vraag, notitie,
+    posten,
   };
 }
 
@@ -681,10 +716,13 @@ async function micazuInbound(req, ruw) {
       <tr><td style="padding:2px 12px 2px 0">Huurder</td><td><b>${esc(b.voornaam)} ${esc(b.achternaam)}</b></td></tr>
       <tr><td style="padding:2px 12px 2px 0">Periode</td><td>${nl(b.aankomst)} t/m ${nl(b.vertrek)}</td></tr>
       <tr><td style="padding:2px 12px 2px 0">Personen</td><td>${b.personen} (huisdieren: ${b.huisdieren})</td></tr>
-      <tr><td style="padding:2px 12px 2px 0">Totaal</td><td>€ ${b.totaal}</td></tr>
+      <tr><td style="padding:2px 12px 2px 0">Bed- / keukenlinnen</td><td>${b.bedlinnen} / ${b.keukenlinnen}</td></tr>
+      ${(b.posten || []).map(p => `<tr><td style="padding:2px 12px 2px 0">${esc(p.label)}</td><td>€ ${p.bedrag.toFixed(2).replace('.', ',')}</td></tr>`).join('')}
+      <tr><td style="padding:2px 12px 2px 0"><b>Totaal</b></td><td><b>€ ${b.totaal.toFixed(2).replace('.', ',')}</b> (huur € ${b.huurprijs.toFixed(2).replace('.', ',')} + extra's € ${b.extras.toFixed(2).replace('.', ',')})</td></tr>
+      <tr><td style="padding:2px 12px 2px 0">Schoonmaak</td><td>€ ${b.schoonmaak.toFixed(2).replace('.', ',')} (ter plaatse)</td></tr>
     </table>
     ${b.vraag ? `<p><b>Vraag van de huurder:</b><br>${esc(b.vraag).replace(/\n/g, '<br>')}</p>` : ''}
-    ${resultaat === 'nieuw' ? '<p style="background:#fffbeb;border:1px solid #f0cc70;padding:8px 12px"><b>Nog aanvullen in de beheerapp:</b> aanhef, e-mail, telefoon, adres, keukenlinnen en borg.</p>' : ''}`);
+    ${resultaat === 'nieuw' ? '<p style="background:#fffbeb;border:1px solid #f0cc70;padding:8px 12px"><b>Nog aanvullen in de beheerapp:</b> aanhef, e-mail, telefoon, adres en borg.</p>' : ''}`);
   return antwoord({ status: 'ok', resultaat });
 }
 
