@@ -110,10 +110,11 @@
       overig || overigPrijs ? `${overig || 'Overige extra\'s'}: ${euro(overigPrijs)}` : '',
     ].filter(Boolean);
     rij("Extra's", [euro(v("Prijs extra's")), ...extraRegels, ...(extraRegels.length ? ['Vooruitbetaling samen met de huurprijs'] : [])]);
-    rij('Borg', [`${euro(v('Borg') || '0')}`, 'De borg wordt opgeteld bij de aanbetaling en zal direct na de huurperiode worden teruggestort.']);
+    const borg = getal(v('Borg'));
+    if (borg > 0) rij('Borg', [`${euro(borg)}`, 'De borg wordt opgeteld bij de aanbetaling en zal direct na de huurperiode worden teruggestort.']);
     rij('Schoonmaak', [euro(schoonmaak), 'Roken in het huis is niet toegestaan. Bij vertrek dient u de woning opgeruimd en bezemschoon achter te laten, zonder sporen van eventuele huisdieren.']);
     rij('Betaling', [
-      `De huurprijs inclusief extra's bedraagt ${euro(v('Totale huursom'))}. Dit bedrag is exclusief schoonmaak en borg.`,
+      `De huurprijs inclusief extra's bedraagt ${euro(v('Totale huursom'))}. Dit bedrag is exclusief schoonmaak${borg > 0 ? ' en borg' : ''}.`,
       `Uw aanbetaling bedraagt ${euro(v('Aanbetaling'))}, te betalen binnen één week na ontvangst van de huurovereenkomst.`,
       `Het resterende deel à ${euro(v('Restant betaling huursom'))} ontvangen wij graag vier weken voor het begin van de huurperiode${iban ? ` op rekening ${iban}` : ''}${tnv ? ` t.n.v. ${tnv}` : ''}.`,
       `De eindschoonmaak is verplicht. Gelieve de schoonmaakkosten à ${euro(schoonmaak)} contant te betalen aan ${ontvangst} bij aankomst.`,

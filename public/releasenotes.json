@@ -1,9 +1,17 @@
 {
   "versies": [
     {
-      "versie": "2.0.4.0",
+      "versie": "2.0.4.1",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "Wordt er geen borg gerekend, dan staat de borg niet meer in de huurovereenkomst en staat er bij Betaling alleen 'exclusief schoonmaak'."
+      ]
+    },
+    {
+      "versie": "2.0.4.0",
+      "datum": "2026-11-27",
+      "commit": "5a5fef7cea6fa7dba0bfaa191e53475c39e4ad7d",
       "wijzigingen": [
         "Bij een nieuwe boeking vul je bovenaan Financieel de bruto huurprijs en een eventuele last-minute korting in; de huurprijs rekent de app daarna zelf uit.",
         "Onder Verblijf, boven de toegangscode, kun je nu overige extra's (zoals een kinderbedje) met een eigen prijs invullen; die prijs telt mee bij de extra's.",
