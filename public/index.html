@@ -1473,7 +1473,6 @@ select.nb-inp{appearance:auto}
 
 <p style="text-align:center;margin:32px 0 20px;font-size:.75rem;line-height:1.9">
   <a href="#" id="app-help" onclick="openHelp();return false" style="color:var(--gold);text-decoration:none;font-weight:600">Help</a><br>
-  <a href="#" onclick="koppelOneDrive();return false" style="color:var(--text-3);text-decoration:none">OneDrive koppelen</a><br>
   <a href="#" id="app-versie" onclick="openReleasenotes();return false" style="color:var(--text-3);text-decoration:none">Versie</a>
 </p>
 
@@ -2742,21 +2741,6 @@ function openReleasenotes() {
     </div>`).join('');
   document.getElementById('rn-inhoud').innerHTML = lijst || '<p>Geen versies gevonden.</p>';
   document.getElementById('rn-modal').style.display = 'flex';
-}
-
-// Eenmalig: OneDrive koppelen (inloggen bij Microsoft en toestemming geven)
-async function koppelOneDrive() {
-  try {
-    const resp = await beheerApi('proxy.php', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ actie: 'onedriveKoppelen' })
-    });
-    const json = await resp.json();
-    if (json.status !== 'ok') throw new Error(json.message);
-    location.href = json.url;
-  } catch (e) {
-    alert('OneDrive koppelen: ' + e.message);
-  }
 }
 
 async function openHelp() {
