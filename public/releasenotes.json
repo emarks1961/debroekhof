@@ -1,9 +1,17 @@
 {
   "versies": [
     {
-      "versie": "2.0.10.0",
+      "versie": "2.0.10.1",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "De tekst boven de knop 'Ik wil graag nog extra's bestellen' in de herinneringsmail is aangepast: de huurder leest nu dat de al betaalde extra's erboven staan en dat aanvullende wensen welkom zijn."
+      ]
+    },
+    {
+      "versie": "2.0.10.0",
+      "datum": "2026-11-27",
+      "commit": "e669c1e7a7acb9af7e56534538ffcff83193c5ec",
       "wijzigingen": [
         "Onderaan de herinneringsmail staat nu de knop 'Ik wil graag nog extra's bestellen'. De huurder krijgt dan een kant-en-klare mail aan info met onderwerp 'Aanvraag extra's', de naam en datum van de boeking, en een lijstje extra's om aantallen of een toelichting in te vullen."
       ]
