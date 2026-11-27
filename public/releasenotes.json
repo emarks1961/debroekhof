@@ -1,9 +1,18 @@
 {
   "versies": [
     {
-      "versie": "2.0.2.1",
+      "versie": "2.0.2.2",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "Micazu-mails worden beter gelezen: de app probeert zowel de tekst- als de opgemaakte versie van de mail en herkent meer schrijfwijzen van datums.",
+        "Lukt het inlezen toch niet, dan staat in de waarschuwingsmail ook welke tekst de app heeft gelezen, zodat de oorzaak snel te vinden is."
+      ]
+    },
+    {
+      "versie": "2.0.2.1",
+      "datum": "2026-11-27",
+      "commit": "91fdf9ec53896c7f8cf41725c84afcddd33b4042",
       "wijzigingen": [
         "Van Micazu-mails wordt alleen een bevestiging dat je een huurder hebt geaccepteerd een boeking. Andere Micazu-mails worden alleen doorgestuurd naar info@debroekhof.nl."
       ]
