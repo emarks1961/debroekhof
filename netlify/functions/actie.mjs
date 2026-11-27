@@ -12,8 +12,13 @@
 //     dagelijks        aankomstmails + op maandag de betaalwaarschuwing (INTERN_GEHEIM)
 //     micazu-import    nieuwe Micazu-boeking uit micazu.gs (MICAZU_GEHEIM)
 //
+//   POST /api/micazu-inbound  webhook "email.received" van Resend (RESEND_WEBHOOK_SECRET):
+//     leest de ontvangen Micazu-mail, maakt de boeking aan en mailt info@ een melding.
+//
 // Alleen ingebouwde Node-modules en fetch; alles in dit ene bestand.
 // ═══════════════════════════════════════════════════════════════════════
+
+import { createHmac, timingSafeEqual } from 'node:crypto';
 
 const TZ = 'Europe/Amsterdam';
 const BUCKET = 'huurovereenkomsten';
@@ -502,11 +507,177 @@ async function micazuImport(b, inst) {
   return { status: 'ok', resultaat: 'nieuw', id: rij.id };
 }
 
+// ── Micazu-mail via Resend (ontvangen mail) ──────────────────────────
+// Resend stuurt bij elke ontvangen mail een webhook (alleen metadata); de inhoud
+// halen we op met GET /emails/receiving/{id}. Ondertekend volgens Svix.
+function controleerHandtekening(req, ruw) {
+  const geheim = env('RESEND_WEBHOOK_SECRET');
+  if (!geheim) return false;
+  const id = req.headers.get('svix-id') || '';
+  const ts = req.headers.get('svix-timestamp') || '';
+  const handtekeningen = req.headers.get('svix-signature') || '';
+  if (!id || !ts || !handtekeningen) return false;
+  if (Math.abs(Date.now() / 1000 - Number(ts)) > 300) return false;
+  const sleutel = Buffer.from(geheim.replace(/^whsec_/, ''), 'base64');
+  const verwacht = createHmac('sha256', sleutel).update(`${id}.${ts}.${ruw}`).digest();
+  return handtekeningen.split(' ').some(deel => {
+    const [versie, sig] = deel.split(',');
+    if (versie !== 'v1' || !sig) return false;
+    const b = Buffer.from(sig, 'base64');
+    return b.length === verwacht.length && timingSafeEqual(b, verwacht);
+  });
+}
+
+function htmlNaarTekst(html) {
+  return String(html || '')
+    .replace(/<(style|script|head)[\s\S]*?<\/\1>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(td|th)>/gi, '\t')
+    .replace(/<\/(p|div|tr|h\d|li|table)>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ').replace(/&euro;/g, '€').replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
+}
+
+const MAANDEN = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+function nlDatumNaarIso(s) {
+  const m = String(s || '').toLowerCase().match(/(\d{1,2})\s+([a-z]+)\s+(\d{4})/);
+  if (!m) return null;
+  const mi = MAANDEN.indexOf(m[2]);
+  return mi < 0 ? null : `${m[3]}-${String(mi + 1).padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+}
+
+function micazuBedrag(s) {
+  let t = String(s || '').replace(/[€\s]/g, '');
+  if (!t) return 0;
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
+  else if (/\.\d{3}$/.test(t)) t = t.replace(/\./g, '');
+  return parseFloat(t) || 0;
+}
+
+// Zelfde regels als parseMicazuMail in apps-script/micazu.gs
+function parseMicazuMail(tekst) {
+  const regels = String(tekst).replace(/\r/g, '').split('\n')
+    .map(r => r.replace(/\u00a0/g, ' ').trim()).filter(Boolean);
+  function zoek(label, vanaf) {
+    const start = vanaf ? Math.max(0, regels.findIndex(r => r.toLowerCase().startsWith(vanaf.toLowerCase()))) : 0;
+    for (let i = start; i < regels.length; i++) {
+      if (regels[i].toLowerCase().startsWith(label.toLowerCase())) {
+        const rest = regels[i].slice(label.length).replace(/^[\s:\t]+/, '').trim();
+        return { waarde: rest || (regels[i + 1] || ''), index: i };
+      }
+    }
+    return { waarde: '', index: -1 };
+  }
+  const val = (label, vanaf) => zoek(label, vanaf).waarde;
+  const aantal = (label, vanaf) => {
+    const z = zoek(label, vanaf);
+    if (z.index < 0) return 0;
+    const m = regels[z.index].match(/(\d+)\s*$/) || String(regels[z.index + 1] || '').match(/^(\d+)/);
+    return m ? parseInt(m[1], 10) : 0;
+  };
+  const boeking = 'Gegevens van de boeking';
+  const aankomst = nlDatumNaarIso(val('Aankomst', boeking));
+  const vertrek = nlDatumNaarIso(val('Vertrek', boeking));
+  if (!aankomst || !vertrek) throw new Fout('aankomst/vertrek niet gevonden');
+  const gegevens = 'Gegevens huurder';
+  const voornaam = val('Voornaam', gegevens);
+  const achternaam = val('Tussenvoegsel & achternaam', gegevens) || val('Achternaam', gegevens);
+  if (!achternaam) throw new Fout('achternaam niet gevonden');
+  const personen = aantal('Aantal volwassenen', gegevens) + aantal('Aantal kinderen', gegevens) + aantal('Aantal baby', gegevens);
+  const huisdieren = aantal('Huisdieren', gegevens);
+  const huur = micazuBedrag(val('Vakantiehuis', boeking));
+  const totaal = micazuBedrag(val('Totaalprijs', boeking));
+  const schoonmaak = micazuBedrag(val('Eindschoonmaak', boeking)) || (90 + huisdieren * 10);
+  const getal = s => { const m = String(s).match(/(\d+)/); return m ? parseInt(m[1], 10) : 0; };
+  const bedlinnen = getal(val('Bedlinnen', boeking));
+  const keukenlinnen = getal(val('Keukenlinnen', boeking));
+  const extras = totaal && huur ? Math.max(0, Math.round((totaal - huur) * 100) / 100) : (bedlinnen * 10 + keukenlinnen * 7);
+  const vIdx = regels.findIndex(r => /^(vragen|bericht) van de huurder/i.test(r));
+  let vraag = '';
+  if (vIdx >= 0) {
+    const eind = regels.findIndex((r, i) => i > vIdx && /^(tip!?|heb je nog vragen)/i.test(r));
+    vraag = regels.slice(vIdx + 1, eind > 0 ? eind : vIdx + 6).join('\n');
+  }
+  return {
+    aankomst, vertrek, voornaam, achternaam, personen, huisdieren, bedlinnen, keukenlinnen,
+    huurprijs: huur || (totaal - extras), extras, totaal: totaal || (huur + extras), schoonmaak, vraag,
+  };
+}
+
+const MICAZU_HERKEN = /boekingsaanvraag[\s\S]{0,40}geaccepteerd/i;
+
+async function micazuInbound(req, ruw) {
+  if (!controleerHandtekening(req, ruw)) return fout('Ongeldige handtekening', 401);
+  let event;
+  try { event = JSON.parse(ruw); } catch { return fout('Geen geldige JSON', 400); }
+  if (event.type !== 'email.received') return antwoord({ status: 'ok', genegeerd: event.type });
+  const emailId = event.data && event.data.email_id;
+  if (!emailId) return fout('email_id ontbreekt', 400);
+
+  // Resend kan een webhook opnieuw sturen: elke mail maar één keer verwerken
+  const gedaan = await db(`mail_log?soort=eq.micazu-inbound&sleutel=eq.${encodeURIComponent(emailId)}&status=eq.verzonden&select=id`);
+  if (gedaan.length) return antwoord({ status: 'ok', resultaat: 'al verwerkt' });
+
+  const res = await fetch(`https://api.resend.com/emails/receiving/${encodeURIComponent(emailId)}`, {
+    headers: { Authorization: `Bearer ${env('RESEND_API_KEY')}` },
+  });
+  if (!res.ok) throw new Error(`Ontvangen mail ophalen mislukt (${res.status}): ${(await res.text()).slice(0, 200)}`);
+  const m = await res.json();
+  const tekst = m.text || htmlNaarTekst(m.html);
+  const inst = await laadInstellingen();
+  const origineel = `<hr style="border:none;border-top:1px solid #ddd;margin:20px 0">
+    <p style="color:#888;font-size:12px">Oorspronkelijke mail van ${esc(m.from)} · ${esc(m.subject)}</p>
+    ${m.html || `<pre style="white-space:pre-wrap;font-family:inherit">${esc(m.text)}</pre>`}`;
+  const melding = (onderwerp, kop) => mail({
+    naar: inst.email_info, onderwerp,
+    html: `<div style="font-family:Arial,sans-serif;font-size:14px;max-width:640px">${kop}${origineel}</div>`,
+    soort: 'micazu-inbound', sleutel: emailId,
+  }, inst);
+
+  if (!MICAZU_HERKEN.test(`${m.subject || ''} ${tekst.slice(0, 600)}`)) {
+    await melding(`Doorgestuurd: ${m.subject || '(geen onderwerp)'}`,
+      '<p>Deze mail kwam binnen op het Micazu-adres van de beheerapp, maar is geen geaccepteerde boeking. Hij is hieronder doorgestuurd.</p>');
+    return antwoord({ status: 'ok', resultaat: 'doorgestuurd' });
+  }
+
+  let b, resultaat;
+  try {
+    b = parseMicazuMail(tekst);
+    resultaat = (await micazuImport(b, inst)).resultaat;
+  } catch (e) {
+    await melding('⚠ Micazu-boeking niet automatisch ingelezen',
+      `<p>Deze Micazu-mail kon niet worden verwerkt: <b>${esc(e.message)}</b>.<br>Voer de boeking met de hand in via de beheerapp.</p>`);
+    return antwoord({ status: 'ok', resultaat: 'mislukt', message: e.message });
+  }
+  const nl = iso => iso.split('-').reverse().join('-');
+  await melding(
+    `${resultaat === 'nieuw' ? 'Nieuwe Micazu-boeking ingelezen' : 'Micazu-boeking bestond al'}: ${b.achternaam} ${nl(b.aankomst)}`,
+    `<p>${resultaat === 'nieuw' ? 'Er is automatisch een boeking aangemaakt vanuit Micazu.' : 'Deze boeking stond al in de beheerapp; er is niets toegevoegd.'}</p>
+    <table style="border-collapse:collapse">
+      <tr><td style="padding:2px 12px 2px 0">Huurder</td><td><b>${esc(b.voornaam)} ${esc(b.achternaam)}</b></td></tr>
+      <tr><td style="padding:2px 12px 2px 0">Periode</td><td>${nl(b.aankomst)} t/m ${nl(b.vertrek)}</td></tr>
+      <tr><td style="padding:2px 12px 2px 0">Personen</td><td>${b.personen} (huisdieren: ${b.huisdieren})</td></tr>
+      <tr><td style="padding:2px 12px 2px 0">Totaal</td><td>€ ${b.totaal}</td></tr>
+    </table>
+    ${b.vraag ? `<p><b>Vraag van de huurder:</b><br>${esc(b.vraag).replace(/\n/g, '<br>')}</p>` : ''}
+    ${resultaat === 'nieuw' ? '<p style="background:#fffbeb;border:1px solid #f0cc70;padding:8px 12px"><b>Nog aanvullen in de beheerapp:</b> aanhef, e-mail, telefoon, adres, keukenlinnen en borg.</p>' : ''}`);
+  return antwoord({ status: 'ok', resultaat });
+}
+
 // ── Ingang ───────────────────────────────────────────────────────────
 export default async (req) => {
   if (req.method !== 'POST') return fout('Alleen POST', 405);
+  const ruw = await req.text();
+  if (new URL(req.url).pathname.endsWith('/micazu-inbound')) {
+    try { return await micazuInbound(req, ruw); } catch (e) {
+      console.error('[micazu-inbound]', e);
+      return fout('Serverfout: ' + e.message, 500); // 500: Resend probeert het later opnieuw
+    }
+  }
   let data;
-  try { data = await req.json(); } catch { return fout('Geen geldige JSON', 400); }
+  try { data = JSON.parse(ruw); } catch { return fout('Geen geldige JSON', 400); }
   const actie = data.actie;
 
   try {
@@ -531,4 +702,4 @@ export default async (req) => {
   }
 };
 
-export const config = { path: '/api/actie' };
+export const config = { path: ['/api/actie', '/api/micazu-inbound'] };
