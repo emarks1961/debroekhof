@@ -1,0 +1,12 @@
+{
+  "versies": [
+    {
+      "versie": "2.0.0.0",
+      "datum": "2026-11-27",
+      "commit": "",
+      "wijzigingen": [
+        "Start van de nieuwe beheerapp op Netlify met Supabase"
+      ]
+    }
+  ]
+}

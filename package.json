@@ -1,0 +1,10 @@
+{
+  "name": "debroekhof-beheer",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Beheerapp vakantiewoning De Broekhof (Netlify + Supabase)",
+  "scripts": {
+    "release": "node scripts/release.mjs"
+  },
+  "dependencies": {}
+}

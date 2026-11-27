@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Beheer – De Broekhof</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Raleway:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#f5ecd8; --card:#fdfaf5; --gold:#8c6d3f; --border:#e5d5b8; --text:#2d2921; --text-3:#9a8c78; }
+  body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg);
+         font-family:Raleway,sans-serif; color:var(--text); padding:16px; box-sizing:border-box; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:32px;
+          max-width:420px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+  h1 { font-family:'Cormorant Garamond',serif; color:var(--gold); font-weight:600; margin:0 0 8px; }
+  p { color:var(--text-3); margin:0; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>De Broekhof beheer</h1>
+    <p>De nieuwe beheerapp is in aanbouw.</p>
+    <p id="versie" style="margin-top:16px;font-size:.8rem"></p>
+  </div>
+<script>
+fetch('/releasenotes.json?t=' + Date.now(), { cache: 'no-store' })
+  .then(r => r.json())
+  .then(n => { document.getElementById('versie').textContent = 'Versie ' + n.versies[0].versie; })
+  .catch(() => {});
+</script>
+</body>
+</html>
