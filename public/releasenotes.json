@@ -1,9 +1,17 @@
 {
   "versies": [
     {
-      "versie": "2.0.3.0",
+      "versie": "2.0.3.1",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "Na opslaan of versturen schuift het scherm naar de groene bevestiging, zodat je ziet dat het gelukt is. De knop toont dan even '✓ Gelukt', zodat een tweede klik niet per ongeluk een foutmelding geeft."
+      ]
+    },
+    {
+      "versie": "2.0.3.0",
+      "datum": "2026-11-27",
+      "commit": "d974ccb17122de4f4d7bbf05d7af8a2f0afea9b1",
       "wijzigingen": [
         "Bij een Micazu-boeking neemt de app nu alle prijsregels over: kinderbedje, bed- en keukenlinnen tellen mee als extra's, en een korting zoals last minute gaat van de huurprijs af. Het totaal is altijd gelijk aan de totaalprijs van Micazu.",
         "Bij zo'n boeking staat in de notitie de volledige Micazu-prijsopbouw en hoeveel volwassenen, kinderen en baby's er komen.",

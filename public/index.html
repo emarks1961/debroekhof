@@ -467,6 +467,7 @@ async function voerActieUit(actieType) {
   if (!voornaam || !achternaam || !aankomst || !vertrek) {
     errEl.textContent = '⚠ Vul minimaal naam, aankomst- en vertrekdatum in.';
     errEl.style.display = 'block';
+    errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     return;
   }
 
@@ -677,6 +678,21 @@ ${inst.telefoon || ''}`;
     // Herstel label op basis van huidige keuze
     const labels = {'opslaan':'Alleen gegevens opslaan','pdf':'Genereer bevestiging (PDF)','verstuur-info':'Verstuur bevestiging naar info','verstuur-huurder':'Verstuur bevestiging naar huurder','informeer-sleutelbeheerder':'Informeer sleutelbeheerder'};
     if (verwerkTxt) verwerkTxt.textContent = labels[huidigVerwerking] || 'Verwerken';
+    toonResultaatMelding(succEl, errEl, verwerkBtn, verwerkTxt);
+  }
+}
+
+// Melding bovenaan het formulier in beeld brengen; na succes de knop even
+// blokkeren met "✓ Gelukt", zodat een tweede klik niet op het lege formulier valt.
+function toonResultaatMelding(succEl, errEl, btn, txt) {
+  const el = succEl.style.display === 'block' ? succEl : (errEl.style.display === 'block' ? errEl : null);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (el === succEl && btn) {
+    const oud = txt ? txt.textContent : '';
+    btn.disabled = true; btn.style.opacity = '.6';
+    if (txt) txt.textContent = '✓ Gelukt';
+    setTimeout(() => { btn.disabled = false; btn.style.opacity = '1'; if (txt && txt.textContent === '✓ Gelukt') txt.textContent = oud; }, 2500);
   }
 }
 
