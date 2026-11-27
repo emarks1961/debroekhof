@@ -38,7 +38,8 @@ Alleen ingelogde accounts die in de tabel `beheerders` staan krijgen toegang
    ```
 
 6. Vul in de tabel `instellingen` de lege waarden in: e-mailadres en naam
-   sleutelbeheerder, ondertekening, telefoonnummer, IBAN en tenaamstelling.
+   sleutelbeheerder, wie de gasten ontvangt (naam + telefoon), ondertekening,
+   telefoonnummer, IBAN en tenaamstelling.
 7. Noteer onder **Project Settings → API**: Project URL, `anon` key en
    `service_role` key.
 
@@ -57,6 +58,18 @@ Alleen ingelogde accounts die in de tabel `beheerders` staan krijgen toegang
    `.env.example`.
 3. **Domain management**: voeg `beheer.debroekhof.app` toe en zet bij Strato een
    CNAME-record `beheer` naar het Netlify-adres.
+
+### 4. Micazu-mails (Apps Script)
+
+Het automatisch inlezen van Micazu-mails blijft in Google Apps Script, omdat het
+Gmail moet lezen. Vervang in het bestaande Apps Script-project `micazu.gs` door
+`apps-script/micazu.gs` en zet onder **Projectinstellingen → Scripteigenschappen**:
+
+- `BEHEER_URL` = `https://beheer.debroekhof.app`
+- `MICAZU_GEHEIM` = dezelfde waarde als in Netlify
+
+Zet daarna in Apps Script de triggers van `stuurAankomstMailDagelijks` en
+`stuurFinancieelOverzichtAlsNodig` uit: dat doet de nieuwe app nu (`planning.mjs`).
 
 ## Geheimen
 
