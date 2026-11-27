@@ -26,3 +26,8 @@
   for = "/releasenotes.json"
   [headers.values]
     Cache-Control = "no-store"
+
+[[headers]]
+  for = "/handleiding.html"
+  [headers.values]
+    Cache-Control = "no-store"
