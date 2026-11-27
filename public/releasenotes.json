@@ -1,9 +1,18 @@
 {
   "versies": [
     {
-      "versie": "2.0.5.1",
+      "versie": "2.0.6.0",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "De reserveringsbevestiging en huurovereenkomst zien er weer uit als het oude Google Doc: briefhoofd met het logo van de Broekhof, bankrekening en KvK-nummer, de handtekening, uitgevulde tekst en onderaan de documentnaam met paginanummer.",
+        "In de huurovereenkomst staan de belangrijke bedragen en datums vetgedrukt, zoals in het origineel; Extra's en Borg verschijnen alleen als ze van toepassing zijn."
+      ]
+    },
+    {
+      "versie": "2.0.5.1",
+      "datum": "2026-11-27",
+      "commit": "797b493dd8e48af10aa00b69d9600279d2b801f0",
       "wijzigingen": [
         "Bij het inlezen van de Micazu-PDF wordt nu de juiste vertrekdatum overgenomen, in plaats van de geboortedatum.",
         "Een Nederlands telefoonnummer wordt automatisch 06-12345678, ook als het als +31 binnenkomt.",

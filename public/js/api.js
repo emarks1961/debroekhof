@@ -210,7 +210,7 @@
   const BUCKET = 'huurovereenkomsten';
 
   async function maakEnBewaarPdf(bestandsnaam, placeholders) {
-    const blob = window.maakHuurovereenkomstPdf(placeholders || {}, window.BROEKHOF.instellingen);
+    const blob = await window.maakHuurovereenkomstPdf(placeholders || {}, window.BROEKHOF.instellingen, bestandsnaam);
     const veilig = String(bestandsnaam || 'Huurovereenkomst').replace(/[^A-Za-z0-9._ -]/g, '_').trim();
     const pad = `${new Date().getFullYear()}/${veilig}.pdf`;
     const { error } = await sb.storage.from(BUCKET).upload(pad, blob, { contentType: 'application/pdf', upsert: true });
