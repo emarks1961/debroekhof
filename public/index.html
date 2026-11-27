@@ -1192,7 +1192,16 @@ select.nb-inp{appearance:auto}
         <span id="boek-status" style="font-size:.72rem;color:#aaa"></span>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button onclick="stuurOverzicht()" id="boek-overzicht-btn" style="background:var(--gold);border:none;color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:6px 10px;border-radius:4px">📧 Overzicht</button>
+        <span style="position:relative;display:inline-block">
+          <button onclick="toggleOverzichtMenu(event)" id="boek-overzicht-btn" style="background:var(--gold);border:none;color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:6px 10px;border-radius:4px">📧 Overzicht ▾</button>
+          <div id="boek-overzicht-menu" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.15);z-index:200;min-width:190px;overflow:hidden">
+            <div style="padding:8px 12px;font-size:.7rem;color:#888;text-transform:uppercase;letter-spacing:.06em">Overzicht sturen naar</div>
+            <button onclick="stuurOverzicht('info')" class="overzicht-opt">Info</button>
+            <button onclick="stuurOverzicht('sleutelbeheerder')" class="overzicht-opt">Sleutelbeheerder</button>
+            <button onclick="stuurOverzicht('beide')" class="overzicht-opt">Beide</button>
+          </div>
+        </span>
+        <style>.overzicht-opt{display:block;width:100%;text-align:left;background:none;border:none;border-top:1px solid #eee;padding:10px 12px;font-size:.85rem;cursor:pointer;color:#333}.overzicht-opt:hover{background:#f5ecd8}</style>
         <button onclick="laadBoekingen()" style="background:transparent;border:1px solid #555;color:#aaa;font-size:.7rem;font-weight:600;cursor:pointer;padding:6px 10px;border-radius:4px">↺ Verversen</button>
       </div>
     </div>
@@ -2135,8 +2144,6 @@ function renderBoekingen(boekingen) {
         <div class="boek-row"><span class="ico">🚪</span><span class="lbl">Toegangscode</span><span class="val" style="font-weight:700;letter-spacing:.05em">${code||'—'}</span></div>
         ${opmerking ? `<div class="boek-warn">⚠️ ${opmerking}</div>` : ''}
         ${b.vraag ? `<div class="boek-row"><span class="ico">💬</span><span class="lbl">Bericht huurder</span><span class="val" style="font-size:.8rem;white-space:pre-line">${String(b.vraag).replace(/</g,'&lt;')}</span></div>` : ''}
-        ${b.notitie ? `<div class="boek-row"><span class="ico">📝</span><span class="lbl">Notitie</span><span class="val" style="font-size:.78rem;white-space:pre-line">${String(b.notitie).replace(/</g,'&lt;')}</span></div>` : ''}
-        ${/aanvullen/i.test(b.bron || '') ? `<div class="boek-warn">📥 Automatisch ingelezen via Micazu — vul aanhef, contactgegevens en borg aan via ✏️ en sla op.</div>` : ''}
       </div>
     </div>`;
   });
@@ -2349,23 +2356,36 @@ async function verwijderBoeking(rijnr, naam) {
 
 
 // ── Boekingenoverzicht mailen ─────────────────────────────────────────────
-async function stuurOverzicht() {
+function toggleOverzichtMenu(e) {
+  e.stopPropagation();
+  const m = document.getElementById('boek-overzicht-menu');
+  m.style.display = m.style.display === 'block' ? 'none' : 'block';
+}
+document.addEventListener('click', () => {
+  const m = document.getElementById('boek-overzicht-menu');
+  if (m) m.style.display = 'none';
+});
+
+// naar: 'info' | 'sleutelbeheerder' | 'beide'
+async function stuurOverzicht(naar = 'info') {
   const btn = document.getElementById('boek-overzicht-btn');
+  document.getElementById('boek-overzicht-menu').style.display = 'none';
   btn.disabled = true;
   btn.textContent = '⏳ Versturen…';
   try {
     const resp = await beheerApi('proxy.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ actie: 'stuurOverzicht' })
+      body: JSON.stringify({ actie: 'stuurOverzicht', naar })
     });
     const json = await resp.json();
     if (json.status !== 'ok') throw new Error(json.message);
-    btn.textContent = '✓ Verstuurd!';
-    setTimeout(() => { btn.textContent = '📧 Overzicht mailen'; btn.disabled = false; }, 3000);
+    btn.textContent = '✓ Verstuurd';
+    btn.title = json.naar ? 'Verstuurd naar ' + json.naar : '';
+    setTimeout(() => { btn.textContent = '📧 Overzicht ▾'; btn.disabled = false; }, 3000);
   } catch(err) {
     alert('Overzicht versturen mislukt: ' + err.message);
-    btn.textContent = '📧 Overzicht mailen';
+    btn.textContent = '📧 Overzicht ▾';
     btn.disabled = false;
   }
 }
