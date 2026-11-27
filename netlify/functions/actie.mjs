@@ -158,13 +158,13 @@ function afwijkend(tijd, standaard) {
   return tijd && tijd !== standaard ? ' <span style="color:#c0392b;font-weight:bold">⚠️ Afwijkend!</span>' : '';
 }
 
-function boekingKaartHtml(b, inst) {
+function boekingKaartHtml(b, inst, nieuw = false) {
   const std = inst.tijden || { checkin: '16:00', checkout: '10:00' };
   const ci = uur(b.checkin) || std.checkin, co = uur(b.checkout) || std.checkout;
   const telL = telLokaal(b.telefoon), telI = telInternationaal(b.telefoon);
   return `
-  <div style="border:1px solid #ddd;padding:16px;margin-bottom:14px;font-family:Arial,sans-serif;font-size:13px;border-radius:4px">
-    <h3 style="margin:0 0 10px 0;color:#8c6d3f;font-size:15px">${nlLang(b.aankomst)} - ${esc(b.aanhef || '')} ${esc(b.achternaam)}</h3>
+  <div style="border:${nieuw ? '2px solid #8c6d3f;background:#fffbeb' : '1px solid #ddd'};padding:16px;margin-bottom:14px;font-family:Arial,sans-serif;font-size:13px;border-radius:4px">
+    <h3 style="margin:0 0 10px 0;color:#8c6d3f;font-size:15px">${nieuw ? '<span style="background:#8c6d3f;color:#fff;font-size:11px;padding:2px 6px;border-radius:3px;margin-right:6px">NIEUW</span>' : ''}${nlLang(b.aankomst)} - ${esc(b.aanhef || '')} ${esc(b.achternaam)}</h3>
     <p style="margin:0 0 4px 0"><b>Aankomst</b><br>${nlLang(b.aankomst)} om ${ci} uur${afwijkend(ci, std.checkin)}</p>
     <p style="margin:0 0 10px 0"><b>Vertrek</b><br>${nlLang(b.vertrek)} om ${co} uur${afwijkend(co, std.checkout)}</p>
     <p style="margin:0 0 4px 0"><b>Huurder</b><br>
@@ -221,12 +221,12 @@ function aankomstMailHtml(b, inst) {
   </body></html>`;
 }
 
-function overzichtHtml(boekingen, inst, intro = '') {
+function overzichtHtml(boekingen, inst, intro = '', nieuw = new Set()) {
   return `<div style="font-family:Arial,sans-serif;font-size:14px;max-width:700px">
     ${intro}
     <h2 style="color:#8c6d3f">Boekingen De Broekhof - ${nl(vandaag())}</h2>
     <p>${boekingen.length} actieve boekingen</p>
-    ${boekingen.map(b => boekingKaartHtml(b, inst)).join('')}
+    ${boekingen.map(b => boekingKaartHtml(b, inst, nieuw.has(b.id))).join('')}
   </div>`;
 }
 
@@ -518,6 +518,35 @@ async function aankomstMails(inst) {
   return log;
 }
 
+// Elke ochtend: zijn er sinds het laatste overzicht aan de sleutelbeheerder nieuwe
+// boekingen bijgekomen, dan krijgt die het overzicht met de nieuwe boekingen gemarkeerd.
+async function sleutelbeheerderNieuweBoekingen(inst) {
+  if (!geldigAdres(inst.email_sleutelbeheerder)) return 'sleutelbeheerder: geen e-mailadres ingesteld';
+  const laatste = (await db('mail_log?soort=in.(sleutelbeheerder,sleutelbeheerder-nieuw)&status=eq.verzonden'
+    + '&order=verzonden_op.desc&limit=1&select=verzonden_op'))[0];
+  const sinds = laatste?.verzonden_op || new Date(Date.now() - 864e5).toISOString();
+  // Overgezette boekingen uit de oude Sheet tellen niet als nieuw
+  const nieuw = await db(`boekingen?verwijderd_op=is.null&legacy_rijnr=is.null&vertrek=gte.${vandaag()}`
+    + `&aangemaakt_op=gt.${encodeURIComponent(sinds)}&order=aankomst.asc&select=id,aankomst,vertrek,aanhef,voornaam,achternaam`);
+  if (!nieuw.length) return 'sleutelbeheerder: geen nieuwe boekingen';
+  const lijst = await actieveBoekingen();
+  const een = nieuw.length === 1;
+  const intro = `
+    <p>Beste ${esc(inst.naam_sleutelbeheerder || '')},</p>
+    <p>${een ? 'Er is een nieuwe boeking bijgekomen' : `Er zijn ${nieuw.length} nieuwe boekingen bijgekomen`}:</p>
+    <ul>${nieuw.map(b => `<li><strong>${nlLang(b.aankomst)} t/m ${nlLang(b.vertrek)} – ${esc([b.voornaam, b.achternaam].filter(Boolean).join(' '))}</strong></li>`).join('')}</ul>
+    <p>Hieronder het volledige overzicht; ${een ? 'de nieuwe boeking is' : 'de nieuwe boekingen zijn'} gemarkeerd met NIEUW.</p>
+    <p>Met vriendelijke groet,<br><strong>${esc((inst.ondertekening || '').split(' ')[0])}</strong></p>
+    <hr style="border:none;border-top:1px solid #ddd;margin:20px 0">`;
+  await mail({
+    naar: inst.email_sleutelbeheerder, cc: [inst.email_info],
+    onderwerp: `Boekingen De Broekhof - ${een ? 'nieuwe boeking' : `${nieuw.length} nieuwe boekingen`}`,
+    html: overzichtHtml(lijst, inst, intro, new Set(nieuw.map(b => b.id))),
+    soort: 'sleutelbeheerder-nieuw',
+  }, inst);
+  return `sleutelbeheerder: overzicht met ${nieuw.length} nieuwe boeking(en)`;
+}
+
 async function betaalwaarschuwing(inst) {
   const week = new Date(Date.now() - 6 * 864e5).toISOString();
   const al = await db(`mail_log?soort=eq.betaalwaarschuwing&status=eq.verzonden&verzonden_op=gte.${week}&select=id`);
@@ -569,6 +598,7 @@ async function betaalwaarschuwing(inst) {
 
 async function dagelijks(inst) {
   const log = await aankomstMails(inst);
+  try { log.push(await sleutelbeheerderNieuweBoekingen(inst)); } catch (e) { log.push(`sleutelbeheerder MISLUKT: ${e.message}`); }
   if (dagVan(vandaag()) === 1) log.push(await betaalwaarschuwing(inst)); // maandag
   return { status: 'ok', log };
 }
