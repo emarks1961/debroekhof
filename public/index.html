@@ -3,31 +3,2583 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow">
 <title>Beheer – De Broekhof</title>
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAAD/0lEQVR42u2Wy2tdVRSHv733ed9H0qRNmzR9anFQpCAO1VFBhUonaqGTguDA4sCxIPgfOCiIAx2IpQ4sYpW2IooPgqIodlJbivW2JLW3bZo093Huee7l4IbamqReidpJ9uhw9jmsj7V+67eWShtTwn08mvt81gDWAFYFICJYWV0TOasJ7vseAGmaoZT6fzIgIv3gUcjn35/h9NRP+FGILN79pxkQEZRSeIHPiS++5ezFS1grtOMezz/5OHmWY639R9lQgzqhiOA4BqUNx059xdXZOV4+sA9jFEeOfcK6epVD+/eigDwvBoYYCEAArRS9LOPoyS8RgeeeeoLvfv6F0pY89ujDHD/9NVlecGj/XqphiC3LgSAG04CAMZp2t0e3l/DSs09TcV22j29g58RGAm04fGAfILTbMUbrf0+EAqCgKEpGh2rs2bUD0ZrfZpq0ujGdOKFx5SpWKfbs2sn6dUMURQFKIasBUEqhtcI1BtcxeJ6LozWlCKZW4fzlGQLPoxoFnGvMoKsVSmsxWuF5bv8/Y9Ba37MUK3ZBXhTkRUma55Slvf08fW2WixcadOKEJC/IypJuL+XihQaXmzfY2rxO4Pm4rsFoje86eI6zIsiyIhQR0jSjk6QsdGKstWRFgTGGTtwDEawVcluiUBit0VpjtMIYg+c6OFpjjKYS+FTDgFo1QmSpVzjLBXddFwDXc5mY3AR5gVjL/K0WI8PbIAzACjgG8hxUv5LxQotoqEba7uJHIZQlOA4UBe1OjNYaz3XugjCvvfLC638GB7QmsZa33z+J7zokSUatEvLDmfMcefcjGjNNxobrtFstpi//jmcMczfnaV67wYefTrFz80bePPoxSoSJsVHOnm9gRXjjneM8svtBKlF4l1ndVQIRwXFd3nrvBPPtLlmWMzu/wIsHn6EX9/jg1DeMj42QJCnDQ1XSLCfLC27cXGDrxBiN6SaT4+vxPJe5+Ra+51KrRiRpRtxLePXwwSU6WCpCBcNDVbKiZHLTeiqRz+hInXkRfM9hZLhOvRqye9d2Ppv6kS3jG4jCgG0TY9SrESgIfJeHdkwyffU6pbVsmZgEETzXJc1z9B0QS0SolEIpRS9JqdUi2u2434LGcKvVYXS4Tl4UCJY4TqnXqoAQ9xJ8z0Mp6PZSXMcQhQGtdpdaJSLL82W7wFlp2gW+R9JLqVZCrjRnOffrJZKsoF4JyfICtWhOpRUqUUDg+8zdahEGPqUteWDrBNs2byQM/BWDDzwLSmtJFme+WIsxBhSIlb7biWCMub2ciAhaKcLA/9vpONA4doyhXomQvkSQ2yar7kwdKLVo3qrvFYvje9X7gIhQLrtsyF8/XP792la8BrAGcI/zB/9F7U6fUNhKAAAAAElFTkSuQmCC">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Raleway:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="js/api.js"></script>
+<script>
+// Inloggen en sessie: zie js/api.js (Supabase Auth).
+
+// ── Nieuwe boeking ────────────────────────────────────────────────────────
+// E-mailadres sleutelbeheerder staat in de tabel instellingen (Supabase)
+const sleutelbeheerderAdres = () => (window.BROEKHOF.instellingen.email_sleutelbeheerder || 'de sleutelbeheerder');
+
+let huidigVerwerking = 'opslaan';
+
+function openNieuweBoeking() {
+  bewerkRijnr = null;
+  // Reset dropdown veilig (element bestaat pas na login)
+  const icon  = document.getElementById('nb-verwerk-icon');
+  const label = document.getElementById('nb-verwerk-label');
+  if (icon)  icon.textContent  = '💾';
+  if (label) label.textContent = 'Alleen gegevens opslaan';
+  huidigVerwerking = 'opslaan';
+  document.querySelectorAll('.nb-menu-opt').forEach(b => b.classList.remove('geselecteerd'));
+  if (document.getElementById('nb-form')) resetFormulier();
+  const suc = document.getElementById('nb-success');
+  const err = document.getElementById('nb-error');
+  if (suc) suc.style.display = 'none';
+  if (err) err.style.display = 'none';
+  toonPagina('page-nb');
+}
+function toonPagina(id) {
+  ['page-kalender','page-boekingen','page-nb','page-betalingen'].forEach(p => {
+    const el = document.getElementById(p);
+    if (el) el.style.display = (p === id) ? '' : 'none';
+  });
+  window.scrollTo(0, 0);
+}
+
+function setNav(el) {
+  document.querySelectorAll('.site-nav a').forEach(a => a.classList.remove('active'));
+  el.classList.add('active');
+}
+function toggleMenu() {
+  const nav = document.getElementById('site-nav');
+  const btn = document.getElementById('hamburger');
+  nav.classList.toggle('open');
+  btn.classList.toggle('open');
+}
+function sluitMenu() {
+  document.getElementById('site-nav').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
+}
+function sluitNieuweBoeking() {
+  // nb-modal removed
+}
+// nb-modal listener toegevoegd onderaan (na HTML)
+
+function nbBerekenSchoonmaak() {
+  // Standaard €90 + €10 per huisdier, overschrijfbaar
+  const dieren = parseInt(document.getElementById('nb-huisdieren').value) || 0;
+  document.getElementById('nb-schoonmaak').value = 90 + (dieren * 10);
+  nbBerekenTotaal();
+}
+function nbBerekenExtras() {
+  // Automatisch berekenen op basis van linnen, maar kan worden overschreven
+  const bed    = parseInt(document.getElementById('nb-bedlinnen').value) || 0;
+  const keuken = parseInt(document.getElementById('nb-keuken').value) || 0;
+  const berekend = (bed * 10) + (keuken * 7);
+  document.getElementById('nb-extras').value = berekend > 0 ? berekend : 0;
+  nbBerekenTotaal();
+}
+function nbBerekenTotaal() {
+  const h = parseFloat(document.getElementById('nb-huurprijs').value) || 0;
+  const x = parseFloat(document.getElementById('nb-extras').value) || 0;
+  const b = parseFloat(document.getElementById('nb-borg').value) || 0;
+  // Totale huursom excl. schoonmaak
+  const tot = h + x;
+  document.getElementById('nb-totaal').value = tot > 0 ? tot.toFixed(2) : '';
+  // Restant = 75%, naar beneden afgerond op 5 euro
+  const restantRaw = tot * 0.75;
+  const restant = Math.floor(restantRaw / 5) * 5;
+  document.getElementById('nb-restant').value = tot > 0 ? restant : '';
+  // Aanbetaling = totaal - restant + borg (zodat restant + aanbetaling altijd klopt)
+  const aanbetaling = Math.round(tot - restant + b);
+  document.getElementById('nb-aanbetaling').value = tot > 0 ? aanbetaling : '';
+}
+function nbGenereerCode() {
+  // 6 cijfers: geen 0, niet beginnen met 1, geen oplopende reeks
+  const cijfers = '23456789';
+  let code;
+  do {
+    code = '';
+    for (let i = 0; i < 6; i++) {
+      code += cijfers[Math.floor(Math.random() * cijfers.length)];
+    }
+    // Controleer op oplopende volgorde (bijv. 234567)
+    const isOplopend = [...code].every((c, i) => i === 0 || +c === +code[i-1] + 1);
+  } while (code[0] === '1' || [...code].every((c, i) => i === 0 || +c === +code[i-1] + 1));
+  document.getElementById('nb-code').value = code;
+}
+
+function fmtDatumNL(dateStr) {
+  // "2026-06-01" -> "01-06-2026"
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-');
+  return `${d}-${m}-${y}`;
+}
+
+
+// ── Nuki: leg code vast vanuit formulier ─────────────────────────────────
+async function legVastInNuki() {
+  const btn     = document.getElementById('nb-nuki-btn');
+  const status  = document.getElementById('nb-nuki-status');
+  const code    = document.getElementById('nb-code').value.trim();
+  const aankomst = document.getElementById('nb-aankomst').value;
+  const vertrek  = document.getElementById('nb-vertrek').value;
+  const checkin  = document.getElementById('nb-checkin').value || '16:00';
+  const checkout = document.getElementById('nb-checkout').value || '10:00';
+  const achternaam = document.getElementById('nb-achternaam').value.trim();
+
+  if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
+    status.textContent = '⚠ Vul eerst een geldige 6-cijferige code in.';
+    status.style.color = '#c62828';
+    status.style.display = 'block';
+    return;
+  }
+  if (!aankomst || !vertrek) {
+    status.textContent = '⚠ Vul eerst aankomst- en vertrekdatum in.';
+    status.style.color = '#c62828';
+    status.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳…';
+  status.textContent = 'Code vastleggen in Nuki…';
+  status.style.color = 'var(--text-3)';
+  status.style.display = 'block';
+
+  try {
+    const resp = await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        actie:       'legVastNuki',
+        code,
+        aankomst,    // YYYY-MM-DD
+        vertrek,     // YYYY-MM-DD
+        checkIn:  checkin,
+        checkOut: checkout,
+        naam:     achternaam,
+      })
+    });
+    const json = await resp.json();
+    if (json.status === 'ok') {
+      status.textContent = '✓ Code vastgelegd in Nuki.';
+      status.style.color = '#2e7d32';
+    } else {
+      status.textContent = '⚠ ' + (json.message || 'Onbekende fout');
+      status.style.color = '#c62828';
+    }
+  } catch(err) {
+    status.textContent = '⚠ Verbindingsfout: ' + err.message;
+    status.style.color = '#c62828';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔒 Leg vast';
+  }
+}
+
+
+
+// ── Herinnering dropdown ──────────────────────────────────────────────────
+let huidigHerinnering = 'info';
+
+function toggleHerinneringMenu() {
+  const menu = document.getElementById('nb-herinnering-menu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+function selecteerHerinnering(actie, icon, label) {
+  huidigHerinnering = actie;
+  document.getElementById('nb-herinnering-icon').textContent  = icon;
+  document.getElementById('nb-herinnering-label').textContent = label;
+  document.querySelectorAll('#nb-herinnering-menu .nb-menu-opt').forEach(b => b.classList.remove('nb-herinnering-geselecteerd'));
+  const map = {'info':'nb-her-opt-info','huurder':'nb-her-opt-huurder','sleutelbeheerder':'nb-her-opt-sleutel'};
+  if (map[actie]) document.getElementById(map[actie]).classList.add('nb-herinnering-geselecteerd');
+  toggleHerinneringMenu();
+}
+
+async function voerHerinneringUit() {
+  const btn = document.getElementById('nb-herinnering-btn');
+  const lbl = document.getElementById('nb-herinnering-label');
+  const errEl  = document.getElementById('nb-error');
+  const succEl = document.getElementById('nb-success');
+  errEl.style.display  = 'none';
+
+  // Valideer: boeking moet gevuld zijn
+  const aankomst   = document.getElementById('nb-aankomst').value;
+  const achternaam = document.getElementById('nb-achternaam').value.trim();
+  if (!aankomst || !achternaam) {
+    errEl.textContent = '⚠ Vul eerst aankomstdatum en naam in voor de herinnering.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  const origLabel = lbl.textContent;
+  lbl.textContent = '⏳ Versturen…';
+
+  try {
+    const resp = await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        actie:          'stuurHerinneringHandmatig',
+        ontvanger:      huidigHerinnering,
+        rijnr:          bewerkRijnr,
+      })
+    });
+    const json = await resp.json();
+    if (json.status !== 'ok') throw new Error(json.message);
+    succEl.innerHTML = '✓ Herinneringsmail verstuurd naar ' + json.naar + '.';
+    succEl.style.display = 'block';
+  } catch(err) {
+    errEl.textContent = '⚠ Herinnering mislukt: ' + err.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    lbl.textContent = origLabel;
+  }
+}
+
+// ── Informeer sleutelbeheerder ────────────────────────────────────────────
+async function informeerSleutelbeheerder() {
+  const verwerkBtn = document.getElementById('nb-verwerk-btn');
+  const verwerkTxt = document.getElementById('nb-verwerk-label');
+  const errEl  = document.getElementById('nb-error');
+  const succEl = document.getElementById('nb-success');
+  errEl.style.display = 'none';
+
+  if (verwerkBtn) { verwerkBtn.disabled = true; verwerkBtn.style.opacity = '.5'; }
+  if (verwerkTxt) verwerkTxt.textContent = '⏳ Versturen…';
+
+  // Haal naam en aankomst uit het formulier voor de intro
+  const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  const voornaam   = g('nb-voornaam');
+  const achternaam = g('nb-achternaam');
+  const aankomst   = g('nb-aankomst');
+  const naam = [voornaam, achternaam].filter(Boolean).join(' ');
+
+  // Formatteer aankomst naar leesbare datum
+  function aankomstLeesbaar(iso) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T12:00:00');
+    const dagen = ['zo','ma','di','wo','do','vr','za'];
+    const maanden = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+    return `${dagen[d.getDay()]} ${d.getDate()} ${maanden[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  try {
+    const resp = await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actie: 'informeerSleutelbeheerder', naam, aankomst: aankomstLeesbaar(aankomst) })
+    });
+    const json = await resp.json();
+    if (json.status !== 'ok') throw new Error(json.message);
+    succEl.innerHTML = '✓ Sleutelbeheerder geïnformeerd (' + sleutelbeheerderAdres() + ').';
+    succEl.style.display = 'block';
+  } catch(err) {
+    errEl.textContent = '⚠ Versturen mislukt: ' + err.message;
+    errEl.style.display = 'block';
+  } finally {
+    if (verwerkBtn) { verwerkBtn.disabled = false; verwerkBtn.style.opacity = '1'; }
+    if (verwerkTxt) verwerkTxt.textContent = 'Informeer sleutelbeheerder';
+  }
+}
+
+// Sluit herinnering menu bij klik buiten
+document.addEventListener('click', function(e) {
+  const wrapper = document.getElementById('nb-herinnering-wrapper');
+  if (wrapper && !wrapper.contains(e.target)) {
+    const menu = document.getElementById('nb-herinnering-menu');
+    if (menu) menu.style.display = 'none';
+  }
+});
+
+// ── Veldvalidatie ─────────────────────────────────────────────────────────
+
+function setVeldStatus(el, hintId, ok, bericht) {
+  el.classList.toggle('goed', ok);
+  el.classList.toggle('fout', !ok);
+  const hint = document.getElementById(hintId);
+  if (hint) {
+    hint.textContent = bericht;
+    hint.className = 'veld-hint ' + (ok ? 'goed' : 'fout');
+  }
+}
+
+function clearVeldStatus(el, hintId) {
+  el.classList.remove('goed','fout');
+  const hint = document.getElementById(hintId);
+  if (hint) { hint.textContent = ''; hint.className = 'veld-hint'; }
+}
+
+// Telefoonnummer: format on input, validate on blur
+function formatTelefoon(el) {
+  // Verwijder alles behalve cijfers, +, -, spatie
+  let v = el.value.replace(/[^\d+\-\s]/g, '');
+  el.value = v;
+}
+
+function valideerTelefoon(el) {
+  const v = el.value.trim();
+  if (!v) { clearVeldStatus(el, 'hint-telefoon'); return true; }
+
+  const land = document.getElementById('nb-land').value.trim().toLowerCase();
+  const isNL = land === 'nederland' || land === 'netherlands' || land === 'nl' || land === '';
+
+  if (isNL) {
+    // NL: 06-XXXXXXXX of 0X-XXXXXXX of 0XX-XXXXXXX (10 cijfers totaal, begint met 0)
+    const digits = v.replace(/[\s\-]/g, '');
+    if (/^0\d{9}$/.test(digits)) {
+      // Formatteer als 06-12345678 of 020-1234567
+      let fmt;
+      if (digits.startsWith('06')) {
+        fmt = digits.slice(0,2) + '-' + digits.slice(2);
+      } else if (digits.length === 10) {
+        fmt = digits.slice(0,3) + '-' + digits.slice(3);
+      } else {
+        fmt = digits;
+      }
+      el.value = fmt;
+      setVeldStatus(el, 'hint-telefoon', true, '✓ Geldig Nederlands nummer');
+      return true;
+    } else {
+      setVeldStatus(el, 'hint-telefoon', false, 'NL nummer: 06-12345678 of 020-1234567');
+      return false;
+    }
+  } else {
+    // Buitenland: moet beginnen met + en landcode hebben
+    const digits = v.replace(/[\s\-\(\)]/g, '');
+    if (/^\+\d{8,15}$/.test(digits)) {
+      setVeldStatus(el, 'hint-telefoon', true, '✓ Geldig internationaal nummer');
+      return true;
+    } else {
+      setVeldStatus(el, 'hint-telefoon', false, 'Internationaal: +31612345678');
+      return false;
+    }
+  }
+}
+
+// E-mail validatie
+function valideerEmail(el) {
+  const v = el.value.trim();
+  if (!v) { clearVeldStatus(el, 'hint-email'); return true; }
+  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+  setVeldStatus(el, 'hint-email', ok, ok ? '✓ Geldig e-mailadres' : 'Ongeldig e-mailadres (bijv. naam@voorbeeld.nl)');
+  return ok;
+}
+
+// Postcode: NL = 1234 AB, buitenland = vrij
+function formatPostcode(el) {
+  const land = document.getElementById('nb-land').value.trim().toLowerCase();
+  const isNL = land === 'nederland' || land === 'netherlands' || land === 'nl' || land === '';
+  if (!isNL) return;
+
+  // Verwijder alles behalve letters en cijfers
+  let v = el.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+  // Format: 4 cijfers + spatie + 2 letters
+  if (v.length > 4) {
+    v = v.slice(0,4) + ' ' + v.slice(4,6);
+  }
+  el.value = v;
+}
+
+function valideerPostcode(el) {
+  const v = el.value.trim();
+  if (!v) { clearVeldStatus(el, 'hint-postcode'); return true; }
+
+  const land = document.getElementById('nb-land').value.trim().toLowerCase();
+  const isNL = land === 'nederland' || land === 'netherlands' || land === 'nl' || land === '';
+
+  if (isNL) {
+    const ok = /^\d{4}\s?[A-Z]{2}$/i.test(v);
+    if (ok && !v.includes(' ')) el.value = v.slice(0,4) + ' ' + v.slice(4).toUpperCase();
+    else if (ok) el.value = v.slice(0,4) + ' ' + v.slice(-2).toUpperCase();
+    setVeldStatus(el, 'hint-postcode', ok, ok ? '✓ Geldige postcode' : 'NL postcode: 1234 AB');
+    return ok;
+  } else {
+    clearVeldStatus(el, 'hint-postcode');
+    return true;
+  }
+}
+
+// Hervalideer bij wijziging land (opgezet na login via initFormValidatie)
+function initFormValidatie() {
+  const land = document.getElementById('nb-land');
+  if (!land) return;
+  land.addEventListener('change', function() {
+    const tel  = document.getElementById('nb-telefoon');
+    const post = document.getElementById('nb-postcode');
+    if (tel && tel.value)  valideerTelefoon(tel);
+    if (post && post.value) valideerPostcode(post);
+  });
+}
+
+
+// ── Verwerk dropdown ──────────────────────────────────────────────────────
+function toggleVerwerkMenu() {
+  const menu = document.getElementById('nb-verwerk-menu');
+  menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+function selecteerVerwerking(actie, icon, label) {
+  huidigVerwerking = actie;
+  document.getElementById('nb-verwerk-icon').textContent  = icon;
+  document.getElementById('nb-verwerk-label').textContent = label;
+  // Markeer geselecteerde optie
+  document.querySelectorAll('.nb-menu-opt').forEach(b => b.classList.remove('geselecteerd'));
+  const map = {'opslaan':'nb-opt-opslaan','pdf':'nb-opt-pdf','verstuur-info':'nb-opt-info','verstuur-huurder':'nb-opt-huurder','informeer-sleutelbeheerder':'nb-opt-sleutel'};
+  if (map[actie]) document.getElementById(map[actie]).classList.add('geselecteerd');
+  toggleVerwerkMenu();
+}
+
+function voerVerwerkingUit() {
+  if (huidigVerwerking === 'opslaan')                      voerActieUit('opslaan');
+  else if (huidigVerwerking === 'pdf')                     voerActieUit('pdf');
+  else if (huidigVerwerking === 'verstuur-info')           voerActieUit('verstuur-info');
+  else if (huidigVerwerking === 'verstuur-huurder')        voerActieUit('verstuur-huurder');
+  else if (huidigVerwerking === 'informeer-sleutelbeheerder') informeerSleutelbeheerder();
+}
+
+// Sluit menu bij klik buiten
+document.addEventListener('click', function(e) {
+  const wrapper = document.getElementById('nb-verwerk-wrapper');
+  if (wrapper && !wrapper.contains(e.target)) {
+    const menu = document.getElementById('nb-verwerk-menu');
+    if (menu) menu.style.display = 'none';
+  }
+});
+
+// actieType: 'opslaan' | 'versturen' | 'pdf'
+async function voerActieUit(actieType) {
+  const errEl  = document.getElementById('nb-error');
+  const succEl = document.getElementById('nb-success');
+  errEl.style.display  = 'none';
+  succEl.style.display = 'none';
+
+  const g = id => document.getElementById(id).value.trim();
+
+  // Validatie
+  const voornaam   = g('nb-voornaam');
+  const achternaam = g('nb-achternaam');
+  const aankomst   = g('nb-aankomst');
+  const vertrek    = g('nb-vertrek');
+  if (!voornaam || !achternaam || !aankomst || !vertrek) {
+    errEl.textContent = '⚠ Vul minimaal naam, aankomst- en vertrekdatum in.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Datumhulpfuncties
+  const maanden   = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+  const dagenLower = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
+  function fmtLang(d) {
+    if (!d) return '';
+    const dt = new Date(d + 'T12:00:00');
+    return `${dagenLower[dt.getDay()]} ${dt.getDate()} ${maanden[dt.getMonth()]} ${dt.getFullYear()}`;
+  }
+  function vandaagNL() {
+    const n = new Date();
+    return `${String(n.getDate()).padStart(2,'0')}-${String(n.getMonth()+1).padStart(2,'0')}-${n.getFullYear()}`;
+  }
+
+  const aankomstNL    = fmtDatumNL(aankomst);
+  const vertrekNL     = fmtDatumNL(vertrek);
+  const aankomstMetDag = fmtLang(aankomst);
+  const vertrekMetDag  = fmtLang(vertrek);
+  const aanhef        = g('nb-aanhef');
+  const personen      = g('nb-personen');
+  const checkin       = g('nb-checkin');
+  const checkout      = g('nb-checkout');
+  const stuurNaarHuurder = actieType === 'verstuur-huurder' || actieType === 'versturen';
+  const aanhefBrief   = aanhef === 'mevrouw' ? 'mevrouw' : 'heer';
+  const personenTxt   = personen === '1' ? '1 persoon' : `${personen} personen`;
+
+  // Spreadsheet rij
+  const nu = new Date();
+  const tijdstempel = `${nu.getDate()}-${nu.getMonth()+1}-${nu.getFullYear()} ${String(nu.getHours()).padStart(2,'0')}:${String(nu.getMinutes()).padStart(2,'0')}:${String(nu.getSeconds()).padStart(2,'0')}`;
+  // Kolomvolgorde moet exact overeenkomen met sheet headers:
+  // 0:Tijdstempel 1:Datum document 2:Datum start 3:Datum eind
+  // 4:Aanhef 5:Voornaam 6:Achternaam 7:Aantal personen 8:Aantal huisdieren
+  // 9:Aantal bedlinnen 10:Aantal keukenlinnen 11:Huurprijs 12:Prijs schoonmaak
+  // 13:Prijs extra's 14:Totale huursom 15:Aanbetaling huursom 16:Restant
+  // 17:Borg 18:Telefoonnummer 19:Adres 20:Postcode 21:Plaats 22:Land
+  // 23:E-mail 24:E-mailadres 25:Toegangscode 26:Tijdstip check in 27:Tijdstip check out
+  const rij = [
+    tijdstempel, aankomstNL, aankomstNL, vertrekNL,          // 0-3
+    aanhef, voornaam, achternaam,                              // 4-6
+    personen, g('nb-huisdieren'), g('nb-bedlinnen'), g('nb-keuken'), // 7-10
+    g('nb-huurprijs'),                                         // 11
+    g('nb-schoonmaak') ? '€' + parseFloat(g('nb-schoonmaak')).toFixed(0) : '', // 12
+    g('nb-extras'), g('nb-totaal'), g('nb-aanbetaling'), g('nb-restant'), // 13-16
+    g('nb-borg'),                                              // 17
+    g('nb-telefoon'), g('nb-adres'), g('nb-postcode'), g('nb-plaats'), g('nb-land'), // 18-22
+    g('nb-email'), '', g('nb-code'), checkin, checkout,        // 23-27
+  ];
+
+  // PDF placeholders
+  const placeholders = {
+    'Today':                    vandaagNL(),
+    'Aanhef':                   aanhef,
+    'Voornaam':                 voornaam,
+    'Achternaam':               achternaam,
+    'Adres':                    g('nb-adres'),
+    'Postcode':                 g('nb-postcode'),
+    'Plaats':                   g('nb-plaats'),
+    'Land':                     g('nb-land'),
+    'Telefoonnummer':           g('nb-telefoon'),
+    'E-mail':                   g('nb-email'),
+    'Datum start':              aankomstMetDag,
+    'Datum eind':               vertrekMetDag,
+    'Tijdstip check in':        checkin,
+    'Tijdstip check out':       checkout,
+    'Aantal personen':          personen,
+    'Aantal huisdieren':        g('nb-huisdieren'),
+    "Huurprijs excl. schoonmaak en extra's": g('nb-huurprijs'),
+    'Borg':                     g('nb-borg') || '0',
+    'Prijs schoonmaak':         '€ ' + g('nb-schoonmaak'),
+    "Prijs extra's":          g('nb-extras'),
+    'Totale huursom':           g('nb-totaal'),
+    'Aanbetaling':              g('nb-aanbetaling'),
+    'Restant betaling huursom': g('nb-restant'),
+    'Aantal bedlinnen':         g('nb-bedlinnen'),
+    'Aantal keukenlinnen':      g('nb-keuken'),
+  };
+
+  const bestandsnaam = `${aankomst} Huurovereenkomst ${achternaam}`;
+
+  const emailTekst = `Geachte ${aanhefBrief} ${achternaam}, beste ${voornaam},
+
+Hartelijk dank voor uw boeking!
+
+U heeft vakantiewoning de Broekhof gereserveerd van ${aankomstMetDag} tot en met ${vertrekMetDag} voor ${personenTxt}.
+
+Graag ontvangen wij uw aanbetaling binnen één week na ontvangst van de huurovereenkomst. 
+Het resterende deel ontvangen wij graag vier weken voor het begin van de huurperiode op
+rekening NL16ABNA0254579973 t.n.v. Ekeby BV te Klarenbeek.
+
+Bijgaand ontvangt u de reserveringsbevestiging met de huurovereenkomst met verdere details en instructies voor de betaling, check-in en check-out.
+
+Hieronder staan enkele huishoudelijke mededelingen:
+
+- er is zowel een Nespresso als een filter koffiezet apparaat aanwezig
+- vaatwasmachine graag uitgeruimd en leeg achter laten
+- het vuilnis graag naar buiten in de daarvoor bestemde containers
+- bed- en keukenlinnen is tegen betaling beschikbaar. Bed is niet opgemaakt.
+- handdoeken dient u zelf mee te nemen
+- roken in het huis is niet toegestaan
+- vermijd sporen van eventuele huisdieren zoveel als mogelijk
+
+Enkele dagen voor aanvang van de huurperiode ontvangt u van ons nog een E-mail 
+met enkele tips over o.a. de route en aanvullende informatie over het huis.
+
+Als er nog vragen zijn dan horen wij dat uiteraard graag van u.
+
+Wij wensen u alvast een aangenaam verblijf toe.
+
+Met vriendelijke groet,
+
+Petra Marks -van Geuns
+vakantieboerderij de Broekhof
+info@debroekhof.nl
+06-19744470`;
+
+  // Knoppen uitschakelen
+  // Schakel verwerk-knop uit tijdens verwerking
+  const verwerkBtn = document.getElementById('nb-verwerk-btn');
+  if (verwerkBtn) { verwerkBtn.disabled = true; verwerkBtn.style.opacity = '.5'; }
+  const verwerkTxt = document.getElementById('nb-verwerk-label');
+
+  function setBtnTxt(id, txt) { if (verwerkTxt && (id === 'nb-btn-versturen' || id === 'nb-btn-opslaan' || id === 'nb-btn-pdf')) verwerkTxt.textContent = txt; }
+
+  try {
+    if (actieType === 'pdf') {
+      // Alleen PDF genereren, niet opslaan
+      setBtnTxt('nb-btn-pdf', '⏳ PDF genereren…');
+      const resp = await beheerApi('proxy.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actie: 'genereerPdf', templateId: DOCS_TEMPLATE_ID, bestandsnaam, placeholders })
+      });
+      const json = await resp.json();
+      if (json.status !== 'ok') throw new Error(json.message);
+      if (json.pdfUrl) {
+        const a = document.createElement('a');
+        a.href = json.pdfUrl; a.download = bestandsnaam + '.pdf';
+        a.style.display = 'none'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      }
+      succEl.innerHTML = '✓ PDF gegenereerd en gedownload.';
+      succEl.style.display = 'block';
+
+    } else if (actieType === 'opslaan') {
+      // Alleen opslaan, geen PDF, geen email
+      setBtnTxt('nb-btn-opslaan', '⏳ Opslaan…');
+      const scriptActie = bewerkRijnr ? 'wijzigBoeking' : 'alleenOpslaan';
+      const resp = await beheerApi('proxy.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actie: scriptActie, rijnr: bewerkRijnr || null, rij })
+      });
+      const json = await resp.json();
+      if (json.status !== 'ok') throw new Error(json.message);
+      succEl.innerHTML = bewerkRijnr ? '✓ Boeking gewijzigd.' : '✓ Boeking opgeslagen.';
+      succEl.style.display = 'block';
+      resetFormulier();
+
+    } else {
+      // Opslaan + PDF + email (verstuur-info of verstuur-huurder)
+      const naarHuurder = actieType === 'verstuur-huurder';
+      const emailAan    = naarHuurder ? g('nb-email') : '';
+      setBtnTxt('nb-btn-versturen', '⏳ PDF genereren…');
+      const scriptActie = bewerkRijnr ? 'wijzigBoeking' : 'opslaanEnVersturen';
+      const resp = await beheerApi('proxy.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          actie: scriptActie,
+          rijnr: bewerkRijnr || null,
+          rij, templateId: DOCS_TEMPLATE_ID, bestandsnaam, placeholders,
+          emailAan,
+          emailTekst,
+        })
+      });
+      const json = await resp.json();
+      if (json.status !== 'ok') throw new Error(json.message);
+
+      setBtnTxt('nb-btn-versturen', '⏳ PDF downloaden…');
+      if (json.pdfUrl) {
+        const a = document.createElement('a');
+        a.href = json.pdfUrl; a.download = bestandsnaam + '.pdf';
+        a.style.display = 'none'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      }
+      const emailInfo = stuurNaarHuurder
+        ? `naar <strong>${g('nb-email')}</strong> en info@debroekhof.nl`
+        : `naar <strong>info@debroekhof.nl</strong> (niet naar huurder)`;
+      const nukiInfo = json.nuki
+        ? (json.nuki.status === 'ok'
+          ? ' <span style="color:#2e7d32">✓ Nuki code aangemaakt.</span>'
+          : ` <span style="color:#c62828">⚠ Nuki: ${json.nuki.message}</span>`)
+        : '';
+      const emailInfo2 = naarHuurder
+        ? `naar <strong>${g('nb-email')}</strong> en info@debroekhof.nl`
+        : `naar <strong>info@debroekhof.nl</strong>`;
+      succEl.innerHTML = `✓ Boeking ${bewerkRijnr ? 'gewijzigd' : 'opgeslagen'}, PDF gegenereerd en e-mail verstuurd ${emailInfo2}.${nukiInfo}`;
+      succEl.style.display = 'block';
+      resetFormulier();
+    }
+
+  } catch (err) {
+    errEl.textContent = '⚠ Fout: ' + err.message;
+    errEl.style.display = 'block';
+  } finally {
+    if (verwerkBtn) { verwerkBtn.disabled = false; verwerkBtn.style.opacity = '1'; }
+    // Herstel label op basis van huidige keuze
+    const labels = {'opslaan':'Alleen gegevens opslaan','pdf':'Genereer bevestiging (PDF)','verstuur-info':'Verstuur bevestiging naar info','verstuur-huurder':'Verstuur bevestiging naar huurder','informeer-sleutelbeheerder':'Informeer sleutelbeheerder'};
+    if (verwerkTxt) verwerkTxt.textContent = labels[huidigVerwerking] || 'Verwerken';
+  }
+}
+
+function resetFormulier() {
+  document.getElementById('nb-form').reset();
+  document.getElementById('nb-land').value       = 'Nederland';
+  document.getElementById('nb-checkin').value    = '16:00';
+  document.getElementById('nb-checkout').value   = '10:00';
+  document.getElementById('nb-huisdieren').value = '0';
+  document.getElementById('nb-bedlinnen').value  = '0';
+  document.getElementById('nb-keuken').value     = '0';
+  document.getElementById('nb-extras').value     = '0';
+  document.getElementById('nb-schoonmaak').value = '90';
+  bewerkRijnr = null;
+  // Verwijder rode randen
+  ['nb-aanhef', 'nb-bedlinnen', 'nb-keuken'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.border = '';
+  });
+}
+
+</script>
 <style>
-  :root { --bg:#f5ecd8; --card:#fdfaf5; --gold:#8c6d3f; --border:#e5d5b8; --text:#2d2921; --text-3:#9a8c78; }
-  body { margin:0; min-height:100vh; display:grid; place-items:center; background:var(--bg);
-         font-family:Raleway,sans-serif; color:var(--text); padding:16px; box-sizing:border-box; }
-  .card { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:32px;
-          max-width:420px; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,.08); }
-  h1 { font-family:'Cormorant Garamond',serif; color:var(--gold); font-weight:600; margin:0 0 8px; }
-  p { color:var(--text-3); margin:0; }
+:root {
+  --bg:           #f5ecd8;
+  --card:         #fdfaf5;
+  --nav:          #222222;
+  --gold:         #8c6d3f;
+  --gold-light:   #f5e9d0;
+  --gold-border:  #b8952a;
+  --border:       #e5d5b8;
+  --text:         #2d2921;
+  --text-2:       #5a4e3a;
+  --text-3:       #9a8c78;
+  --ok-bg:        #edf5ec;
+  --ok:           #2d6a30;
+  --err-bg:       #fdf2f2;
+  --err:          #8b2020;
+  --r:            4px;
+  --shadow:       0 2px 8px rgba(0,0,0,.08), 0 8px 32px rgba(0,0,0,.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Raleway',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Navigatie (desktop: horizontaal, mobiel: hamburger) ────────────── */
+.site-mob-header{display:none}
+.hamburger{display:none}
+.site-nav{display:flex;flex-wrap:wrap;justify-content:center;background:var(--nav)}
+.site-nav a{display:block;padding:14px 20px;font-size:.68rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#888;text-decoration:none;transition:background .2s,color .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.site-nav a.active{background:var(--gold);color:#fff}
+.site-nav a:hover:not(.active){color:#fff}
+/* Desktop site-header */
+.site-header{background:var(--card);padding:12px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:14px}
+.site-logo{display:flex;align-items:center;gap:10px}
+.site-logo img{width:44px;height:44px;object-fit:contain}
+.site-logo .sub{font-size:.65rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text-3);font-weight:700}
+
+@media(max-width:640px){
+  .site-header{display:none}
+  .site-mob-header{display:flex;align-items:center;justify-content:space-between;background:var(--nav);padding:0 16px;height:50px;position:sticky;top:0;z-index:500}
+  .site-mob-logo{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:700;color:#fff;letter-spacing:.05em}
+  .hamburger{display:flex;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:8px;width:36px;height:36px}
+  .hamburger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;transition:transform .25s,opacity .25s;transform-origin:center}
+  .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+  .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .site-nav{flex-direction:column;max-height:0;overflow:hidden;transition:max-height .3s ease;position:relative;z-index:499}
+  .site-nav.open{max-height:400px}
+  .site-nav a{padding:14px 20px;font-size:.82rem;letter-spacing:.08em;border-bottom:1px solid rgba(255,255,255,.08)}
+  .site-nav a.active{background:var(--gold);color:#fff}
+}
+
+.page{max-width:680px;margin:0 auto;padding:32px 16px 48px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+
+.prog{height:3px;background:var(--border)}
+.prog-fill{height:3px;background:var(--gold);transition:width .35s ease}
+
+.sh{padding:24px 28px 20px;border-bottom:1px solid var(--border)}
+.sh-lbl{font-size:.7rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px}
+.sh-title{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:600;color:var(--text);margin-bottom:4px}
+.sh-sub{font-size:.85rem;color:var(--text-2)}
+.sb{padding:24px 28px 28px}
+.step{display:none}.step.active{display:block}
+
+.field{margin-bottom:18px}
+.field label{display:block;font-size:.75rem;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.field input,.field select{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--r);font-family:'Raleway',sans-serif;font-size:.93rem;color:var(--text);background:#fff;transition:border-color .2s}
+.field input:focus,.field select:focus{outline:none;border-color:var(--gold)}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:440px){.field-grid{grid-template-columns:1fr}}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:11px 24px;border:none;border-radius:var(--r);font-family:'Raleway',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .18s,transform .1s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--gold);color:#fff}
+.btn.primary:hover{background:#7a5c10}
+.btn.primary:disabled{background:#b8a882;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--text-2);border:1.5px solid var(--border)}
+.btn.ghost:hover{background:var(--gold-light)}
+.btn-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:22px}
+
+.info-box{background:var(--gold-light);border:1px solid var(--gold-border);border-radius:var(--r);padding:12px 15px;font-size:.85rem;color:var(--gold);margin-bottom:18px;line-height:1.5}
+
+.cat-card{border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:18px;overflow:hidden}
+.cat-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;gap:8px}
+.cat-header h3{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:600;color:var(--text)}
+.cat-total{font-size:.85rem;font-weight:700;color:var(--gold);white-space:nowrap}
+.cat-body{padding:14px 16px 16px}
+
+.col-heads{display:grid;gap:7px;margin-bottom:6px}
+.col-heads span{font-size:.68rem;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em}
+.col-heads.no-uren{grid-template-columns:126px 1fr 82px 34px}
+.col-heads.met-uren{grid-template-columns:126px 1fr 58px 82px 34px}
+@media(max-width:500px){.col-heads{display:none}}
+
+.post-row{display:grid;gap:7px;align-items:start;margin-bottom:7px}
+.post-row.no-uren{grid-template-columns:126px 1fr 82px 34px}
+.post-row.met-uren{grid-template-columns:126px 1fr 58px 82px 34px}
+@media(max-width:500px){
+  .post-row.no-uren,.post-row.met-uren{grid-template-columns:1fr 1fr;gap:6px}
+  .post-row>*:nth-child(2){grid-column:1/-1}
+}
+.post-row input{padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--r);font-family:'Raleway',sans-serif;font-size:.85rem;color:var(--text);width:100%;min-width:0;background:#fff}
+.post-row input:focus{outline:none;border-color:var(--gold)}
+.post-row input[type=number]{text-align:right}
+.del-btn{width:34px;height:34px;flex-shrink:0;border:1.5px solid #d9b8b8;border-radius:var(--r);background:transparent;color:var(--err);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.del-btn:hover{background:var(--err-bg)}
+.add-btn{display:flex;align-items:center;gap:6px;margin-top:8px;padding:8px 13px;border:1.5px dashed var(--border);border-radius:var(--r);background:transparent;font-family:'Raleway',sans-serif;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);cursor:pointer;transition:border-color .2s,color .2s;width:100%}
+.add-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+.status{display:flex;align-items:center;gap:9px;padding:11px 14px;border-radius:var(--r);font-size:.88rem;margin-top:12px}
+.status.ok{background:var(--ok-bg);color:var(--ok)}
+.status.fail{background:var(--err-bg);color:var(--err)}
+
+.meta-line{font-size:.87rem;color:var(--text-2);margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.meta-line strong{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--text);display:block;margin-bottom:2px}
+.sum-blk{border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden}
+.sum-blk-head{background:var(--bg);padding:10px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:8px}
+.sum-blk-head .hnaam{font-family:'Cormorant Garamond',serif;font-size:.9rem;font-weight:600;color:var(--text)}
+.sum-blk-head .htotaal{font-size:.85rem;font-weight:700;color:var(--gold)}
+.sum-blk-body{padding:10px 14px}
+.sum-row{display:flex;align-items:baseline;gap:8px;font-size:.84rem;padding:5px 0;border-bottom:1px solid var(--border)}
+.sum-row:last-child{border-bottom:none}
+.sum-row .dt{color:var(--text-3);font-size:.78rem;flex:0 0 90px;white-space:nowrap}
+.sum-row .oms{flex:1;min-width:0}
+.sum-row .uren-lbl{color:var(--text-3);font-size:.75rem;flex-shrink:0}
+.sum-row .bdg{font-weight:700;text-align:right;flex:0 0 72px;white-space:nowrap}
+.eindbox{background:var(--gold-light);border:1.5px solid var(--gold-border);border-radius:var(--r);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.eindbox .lbl{font-family:'Cormorant Garamond',serif;font-size:.95rem;color:var(--gold)}
+.eindbox .amt{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:var(--gold)}
+.verzend-info{background:var(--gold-light);border:1px solid var(--gold-border);border-radius:var(--r);padding:12px 15px;font-size:.85rem;color:var(--gold);margin-top:14px;line-height:1.6}
+.verzend-info strong{font-weight:700}
+/* ── Login overlay ── */
+#login-overlay{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);width:100%;max-width:380px;overflow:hidden}
+.login-header{background:var(--bg);padding:28px 28px 20px;text-align:center;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center}
+.login-header svg{width:52px;height:52px;color:#fff;margin-bottom:12px}
+.login-header .brand{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:#fff;display:block;margin-bottom:2px}
+.login-header .sub{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-3);font-weight:700}
+.login-body{padding:28px}
+.login-body .field{margin-bottom:16px}
+.login-body .field label{display:block;font-size:.75rem;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.login-body .field input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--r);font-family:'Raleway',sans-serif;font-size:.95rem;color:var(--text);background:#fff;transition:border-color .2s}
+.login-body .field input:focus{outline:none;border-color:var(--gold)}
+.login-err{background:var(--err-bg);color:var(--err);border-radius:var(--r);padding:10px 13px;font-size:.85rem;margin-bottom:14px;display:none}
+.login-btn{width:100%;padding:12px;background:var(--gold);color:#fff;border:none;border-radius:var(--r);font-family:'Raleway',sans-serif;font-size:.88rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .18s}
+.login-btn:hover{background:#7a5c10}
+/* ── Boekingen ── */
+.boek-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.boek-kaart{background:#fff;border:1.5px solid var(--border);border-radius:6px;overflow:hidden;transition:box-shadow .2s}
+.boek-kaart:hover{box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.boek-kaart-head{background:var(--gold);padding:10px 14px;display:flex;flex-direction:column;gap:6px}
+.boek-kaart-head .periode{font-family:'Cormorant Garamond',serif;font-size:.95rem;font-weight:600;color:#fff;line-height:1.3;text-align:left}
+.boek-kaart-head .badge{font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:20px;background:rgba(255,255,255,.2);color:#fff;white-space:nowrap;flex-shrink:0}
+.boek-kaart-head .badge.huidig{background:#fff;color:var(--gold)}
+.boek-kaart-head .badge.verleden{opacity:.6}
+.boek-kaart-body{padding:14px}
+.boek-row{display:flex;gap:8px;align-items:baseline;font-size:.83rem;padding:4px 0;border-bottom:1px solid var(--border)}
+.boek-row:last-child{border-bottom:none}
+.boek-row .ico{flex:0 0 18px;text-align:center}
+.boek-row .lbl{color:var(--text-3);font-size:.73rem;flex:0 0 86px;text-align:left}
+.boek-row .val{color:var(--text);flex:1;font-weight:500;word-break:break-word;text-align:left}
+.boek-warn{background:#fffbeb;border:1px solid #f0cc70;border-radius:4px;padding:6px 10px;font-size:.77rem;color:#8a6000;margin-top:8px}
+.boek-leeg{text-align:center;padding:40px 20px;color:var(--text-3);font-size:.9rem}
+.boek-filter{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.boek-filter button{padding:6px 14px;border:1.5px solid var(--border);border-radius:20px;background:transparent;font-family:'Raleway',sans-serif;font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);cursor:pointer;transition:all .2s}
+.boek-filter button.sel{background:var(--gold);border-color:var(--gold);color:#fff}
+.login-footer{text-align:center;font-size:.75rem;color:var(--text-3);padding:0 28px 20px;font-style:italic}
+{text-align:center;font-size:.75rem;color:var(--text-3);margin-top:24px;letter-spacing:.08em;font-style:italic}
+
+  .nb-lbl{display:block;font-size:.72rem;color:var(--text-3);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;text-align:left}
+  .nb-inp{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;background:var(--light,#fff);color:var(--text);font-size:.88rem;font-family:inherit;box-sizing:border-box}
+  .nb-inp:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(139,111,71,.15)}
+  select.nb-inp{appearance:auto}
+
+/* ── Mobile-first responsiveness ─────────────────────────────────────── */
+@media(max-width:600px){
+  /* Nav: grotere raakoppervlakken, stacked op heel smal */
+  /* nav handled by hamburger on mobile */
+
+  /* Modals: volledig scherm op mobiel */
+  #nb-modal,#boek-modal,#kal-modal{padding:0;align-items:flex-start}
+  #nb-modal > div,#boek-modal > div,#kal-modal > div{
+    border-radius:0;min-height:100dvh;width:100%;max-width:100%!important;
+    box-shadow:none;display:flex;flex-direction:column
+  }
+
+  /* Formulier: altijd 1 kolom */
+  #nb-modal [style*="grid-template-columns:1fr 1fr"],
+  #nb-modal [style*="grid-template-columns:120px 1fr 1fr"],
+  #nb-modal [style*="grid-template-columns:1fr 1fr 1fr"]{
+    display:grid!important;
+    grid-template-columns:1fr!important
+  }
+
+  /* Invoervelden: groter voor touch */
+  .nb-inp{padding:11px 12px;font-size:1rem}
+  .nb-lbl{font-size:.75rem;margin-bottom:5px}
+
+  /* Sectie-headers in formulier */
+  #nb-modal [style*="font-family:'Cormorant"]{font-size:1.05rem}
+
+  /* Formulier padding */
+  #nb-modal > div > div:last-child{padding:16px}
+
+  /* Sticky header in modal */
+  #nb-modal > div > div:first-child{padding:12px 16px}
+
+  /* Boekingen grid: 1 kolom */
+  .boek-grid{grid-template-columns:1fr}
+
+  /* Boekingen filter: scroll horizontaal */
+  .boek-filter{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .boek-filter button{flex-shrink:0}
+
+  /* Knoppen onderaan formulier: volle breedte gestapeld */
+  #nb-modal button[type=submit],
+  #nb-modal button[type=button]{font-size:.82rem;padding:13px 16px}
+}
+
+@media(max-width:380px){
+  /* nav handled by hamburger on mobile */
+  .nb-inp{font-size:.95rem}
+}
+@media(max-width:600px){
+  input[type="date"].nb-inp,input[type="time"].nb-inp{
+    width:100%!important;min-width:0!important;box-sizing:border-box!important
+  }
+}
+@media(max-width:600px){.nb-body{padding:16px!important}}
+
+/* ── Kalender ──────────────────────────────────────────────── */
+.kal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:8px;box-sizing:border-box;width:100%}
+.kal-dag-naam{text-align:center;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:6px 0}
+.kal-cel{min-height:64px;padding:4px;border-radius:4px;background:var(--card);border:1px solid var(--border);position:relative;font-size:.8rem}
+.kal-cel.leeg{background:transparent;border-color:transparent}
+.kal-cel.vandaag{border-color:var(--gold);background:var(--gold-light,#fdf5e4)}
+.kal-cel.bezet{background:var(--gold);border-color:var(--gold)}
+.kal-dag-nr{font-size:.75rem;color:var(--text-3);line-height:1;margin-bottom:2px}
+.kal-cel.bezet .kal-dag-nr{color:rgba(255,255,255,.7)}
+.kal-naam{font-size:.72rem;font-weight:700;color:#fff;line-height:1.2;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.kal-naam:hover{opacity:.85}
+@media(max-width:500px){
+  .kal-cel{min-height:44px;padding:3px}
+  .kal-naam{font-size:.62rem}
+}
+
+/* ── Pagina-layout (vervangt modals) ────────────────────── */
+.pagina{display:none}
+.pagina-header{display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px;padding:16px;background:var(--nav);
+  position:sticky;top:0;z-index:100}
+.pagina-titel{font-family:"Cormorant Garamond",serif;font-size:1.1rem;
+  font-weight:700;color:#fff;letter-spacing:.05em;margin:0}
+.btn-klein{font-size:.72rem;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;cursor:pointer;padding:6px 12px;
+  border-radius:4px;border:none;white-space:nowrap}
+.btn-gold{background:var(--gold);color:#fff}
+.btn-ghost{background:transparent;border:1px solid #555 !important;color:#aaa}
+@media(max-width:640px){
+  .pagina-header{padding:10px 12px;gap:8px}
+  .pagina-header h2{font-size:.95rem}
+  .btn-klein{padding:5px 8px;font-size:.65rem}
+  #boek-inhoud{padding:0 8px 24px!important}
+  .boek-grid{grid-template-columns:1fr!important}
+  .boek-kaart-head{flex-wrap:wrap}
+}
+
+
+/* ── Nieuw boeking formulier ──────────────────────────────── */
+.nb-sectie{margin-bottom:24px}
+.nb-sectie-titel{font-family:"Cormorant Garamond",serif;font-size:1rem;font-weight:700;color:var(--text);padding-bottom:6px;border-bottom:1px solid var(--border);margin-bottom:14px}
+.nb-rij{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;align-items:start}
+.nb-rij-1{grid-template-columns:1fr}
+.nb-rij-3{grid-template-columns:1fr 1fr 1fr}
+.nb-veld-span2{grid-column:span 2}
+.nb-fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+.nb-veld{display:flex;flex-direction:column;gap:4px}
+.nb-lbl{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);line-height:1.3}
+.nb-sub{font-weight:400;text-transform:none;letter-spacing:0;font-size:.68rem;opacity:.75}
+.nb-inp{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:.9rem;background:#fff;color:var(--text);transition:border-color .2s;box-sizing:border-box;height:42px}
+.nb-inp:focus{outline:none;border-color:var(--gold)}
+.nb-inp.fout{border-color:#c62828;background:#fff8f8}
+.nb-inp.goed{border-color:#2e7d32}
+select.nb-inp{appearance:auto}
+.veld-hint{font-size:.72rem;margin-top:2px;min-height:16px}
+.veld-hint.fout{color:#c62828}
+.veld-hint.goed{color:#2e7d32}
+@media(max-width:640px){
+  .nb-rij,.nb-rij-3,.nb-fin-grid{grid-template-columns:1fr;gap:10px}
+  .nb-rij-1{grid-template-columns:1fr}
+  .nb-veld-span2{grid-column:1}
+  .nb-inp{font-size:1rem;height:48px;padding:12px}
+}
+
+/* ── Verwerk dropdown ─────────────────────────────────────── */
+.nb-menu-opt{display:flex;flex-direction:column;align-items:flex-start;width:100%;padding:12px 16px;background:none;border:none;border-bottom:1px solid var(--border);cursor:pointer;font-size:.88rem;font-weight:600;color:var(--text);text-align:left;gap:2px;transition:background .15s}
+.nb-menu-opt:last-child{border-bottom:none}
+.nb-menu-opt:hover{background:var(--gold-light,#fdf5e4)}
+.nb-menu-opt.geselecteerd{background:var(--gold);color:#fff}
+.nb-menu-opt.geselecteerd .nb-menu-sub{color:rgba(255,255,255,.8)}
+.nb-menu-sub{font-size:.75rem;font-weight:400;color:var(--text-3)}
 </style>
 </head>
 <body>
-  <div class="card">
-    <h1>De Broekhof beheer</h1>
-    <p>De nieuwe beheerapp is in aanbouw.</p>
-    <p id="versie" style="margin-top:16px;font-size:.8rem"></p>
+
+<!-- Login overlay -->
+<div id="login-overlay">
+  <div class="login-card">
+    <div class="login-header">
+      <img src="data:image/webp;base64,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" style="width:100px;height:100px;object-fit:contain;margin-bottom:4px" alt="de Broekhof">
+      <span class="sub" style="letter-spacing:.2em;font-size:.65rem;margin-top:-4px">BEHEER</span>
+    </div>
+    <div class="login-body">
+      <div id="login-err" class="login-err">E-mailadres of wachtwoord onjuist.</div>
+      <div class="field">
+        <label>E-mailadres</label>
+        <input type="email" id="l-user" autocomplete="username" placeholder="naam@voorbeeld.nl">
+      </div>
+      <div class="field">
+        <label>Wachtwoord</label>
+        <input type="password" id="l-pass" autocomplete="current-password" placeholder="Wachtwoord">
+      </div>
+      <button class="login-btn" onclick="doLogin()">Inloggen</button>
+      <p style="text-align:center;margin:14px 0 0;font-size:.8rem"><a href="#" onclick="wachtwoordVergeten();return false" style="color:var(--text-3)">Wachtwoord vergeten?</a></p>
+    </div>
+    <p class="login-footer">— Team De Broekhof —</p>
   </div>
+</div>
+
+<div id="main-content" style="display:none">
+
+<!-- ─── Desktop header met logo ────────────────────────────── -->
+<div class="site-header">
+  <div class="site-logo">
+<img src="data:image/webp;base64,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" style="width:72px;height:72px;object-fit:contain;margin-bottom:0" alt="de Broekhof">
+    <span class="sub">BEHEER</span>
+  </div>
+</div>
+
+<!-- ─── Mobiel: alleen hamburger-balk ──────────────────────── -->
+<div class="site-mob-header">
+  <span class="site-mob-logo">De Broekhof – Beheer</span>
+  <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</div>
+
+<!-- ─── Navigatie ──────────────────────────────────────────── -->
+<nav class="site-nav" id="site-nav">
+  <a href="#" class="active" id="nav-kalender"    onclick="setNav(this);toonKalender();sluitMenu();return false;">Kalender</a>
+  <a href="#" id="nav-boekingen"                  onclick="setNav(this);openBoekingen();sluitMenu();return false;">Boekingen</a>
+  <a href="#" id="nav-nb"                         onclick="setNav(this);openNieuweBoeking();sluitMenu();return false;">Nieuwe boeking</a>
+  <a href="#" id="nav-betalingen"                 onclick="setNav(this);toonBetalingen();sluitMenu();return false;">Betalingen</a>
+  <a href="#" id="nav-uitloggen"                  onclick="doLogout();return false;">Uitloggen</a>
+</nav>
+
+<!-- ─── Kalender ───────────────────────────────────────────── -->
+<div id="page-kalender">
+  <div style="max-width:900px;margin:0 auto;padding:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--text);margin:0">Kalender</h2>
+        <p style="color:var(--text-3);font-size:.8rem;margin:2px 0 0">Boekingsoverzicht per maand</p>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button onclick="kalenderMaand(-1)" style="background:var(--card);border:1px solid var(--border);color:var(--text);font-size:1rem;cursor:pointer;padding:5px 12px;border-radius:4px">‹</button>
+        <span id="kal-label" style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:var(--text);min-width:140px;text-align:center"></span>
+        <button onclick="kalenderMaand(1)" style="background:var(--card);border:1px solid var(--border);color:var(--text);font-size:1rem;cursor:pointer;padding:5px 12px;border-radius:4px">›</button>
+        <button onclick="laadKalender()" style="background:transparent;border:1px solid var(--border);color:var(--text-3);font-size:.7rem;font-weight:600;cursor:pointer;padding:5px 10px;border-radius:4px">↺</button>
+      </div>
+    </div>
+    <div id="kal-inhoud">Laden…</div>
+  </div>
+</div>
+
+<!-- ─── Boekingen ──────────────────────────────────────────── -->
+<div id="page-boekingen" style="display:none">
+  <div style="max-width:960px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--nav);flex-wrap:wrap;gap:8px;position:sticky;top:0;z-index:100">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <span style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:700;color:#fff">Boekingen</span>
+        <span id="boek-status" style="font-size:.72rem;color:#aaa"></span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button onclick="stuurOverzicht()" id="boek-overzicht-btn" style="background:var(--gold);border:none;color:#fff;font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;padding:6px 10px;border-radius:4px">📧 Overzicht</button>
+        <button onclick="laadBoekingen()" style="background:transparent;border:1px solid #555;color:#aaa;font-size:.7rem;font-weight:600;cursor:pointer;padding:6px 10px;border-radius:4px">↺ Verversen</button>
+      </div>
+    </div>
+    <div id="boek-inhoud" style="padding:16px">
+      <p style="color:var(--text-3);text-align:center;padding:40px 0">Laden…</p>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Nieuwe boeking ─────────────────────────────────────── -->
+<div id="page-nb" style="display:none">
+  <div style="max-width:680px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--nav);position:sticky;top:0;z-index:100;gap:8px">
+      <span style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:700;color:#fff">Nieuwe boeking</span>
+      <label id="importeer-btn" title="Importeer meest recente boeking uit Excel-bestand" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:5px 10px;border-radius:4px;white-space:nowrap">
+            📥 Importeer boeking
+            <input type="file" id="importeer-input" accept=".xlsx" style="display:none" onchange="importeerBoeking(this)">
+          </label>
+    </div>
+    <div style="padding:16px">
+      <div id="nb-error" style="display:none;background:#fdecea;border:1px solid #ef9a9a;border-radius:6px;padding:16px 20px;margin-bottom:20px;color:#c62828;font-size:.88rem"></div>
+      <div id="nb-success" style="display:none;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:16px 20px;margin-bottom:20px;color:#2e7d32;font-size:.9rem;font-weight:600"></div>
+      <form id="nb-form" onsubmit="return false;">
+
+  <!-- Periode -->
+  <div class="nb-sectie">
+    <div class="nb-sectie-titel">Periode</div>
+    <div class="nb-rij">
+      <div class="nb-veld"><label class="nb-lbl">Aankomstdatum *</label><input class="nb-inp" type="date" id="nb-aankomst" required></div>
+      <div class="nb-veld"><label class="nb-lbl">Vertrekdatum *</label><input class="nb-inp" type="date" id="nb-vertrek" required></div>
+    </div>
+    <div class="nb-rij">
+      <div class="nb-veld"><label class="nb-lbl">Check-in tijd</label><input class="nb-inp" type="time" id="nb-checkin" value="16:00"></div>
+      <div class="nb-veld"><label class="nb-lbl">Check-out tijd</label><input class="nb-inp" type="time" id="nb-checkout" value="10:00"></div>
+    </div>
+  </div>
+
+  <!-- Huurder -->
+  <div class="nb-sectie">
+    <div class="nb-sectie-titel">Huurder</div>
+    <div class="nb-rij nb-rij-1">
+      <div class="nb-veld"><label class="nb-lbl">Aanhef *</label>
+        <select class="nb-inp" id="nb-aanhef">
+          <option value="">—</option>
+          <option value="heer">heer</option>
+          <option value="mevrouw">mevrouw</option>
+        </select>
+      </div>
+    </div>
+    <div class="nb-rij">
+      <div class="nb-veld"><label class="nb-lbl">Voornaam *</label><input class="nb-inp" type="text" id="nb-voornaam" required></div>
+      <div class="nb-veld"><label class="nb-lbl">Achternaam *</label><input class="nb-inp" type="text" id="nb-achternaam" required></div>
+    </div>
+    <div class="nb-rij">
+      <div class="nb-veld">
+        <label class="nb-lbl">Telefoonnummer</label>
+        <input class="nb-inp" type="tel" id="nb-telefoon" oninput="formatTelefoon(this)" onblur="valideerTelefoon(this)">
+        <div class="veld-hint" id="hint-telefoon"></div>
+      </div>
+      <div class="nb-veld">
+        <label class="nb-lbl">E-mail</label>
+        <input class="nb-inp" type="email" id="nb-email" onblur="valideerEmail(this)">
+        <div class="veld-hint" id="hint-email"></div>
+      </div>
+    </div>
+    <div class="nb-rij">
+      <div class="nb-veld"><label class="nb-lbl">Adres</label><input class="nb-inp" type="text" id="nb-adres"></div>
+      <div class="nb-veld">
+        <label class="nb-lbl">Postcode</label>
+        <input class="nb-inp" type="text" id="nb-postcode" oninput="formatPostcode(this)" onblur="valideerPostcode(this)">
+        <div class="veld-hint" id="hint-postcode"></div>
+      </div>
+    </div>
+    <div class="nb-rij">
+      <div class="nb-veld"><label class="nb-lbl">Plaats</label><input class="nb-inp" type="text" id="nb-plaats"></div>
+      <div class="nb-veld"><label class="nb-lbl">Land</label><input class="nb-inp" type="text" id="nb-land" value="Nederland"></div>
+    </div>
+  </div>
+
+  <!-- Verblijf -->
+  <div class="nb-sectie">
+    <div class="nb-sectie-titel">Verblijf</div>
+    <div class="nb-rij">
+      <div class="nb-veld"><label class="nb-lbl">Personen *</label><input class="nb-inp" type="number" id="nb-personen" min="1" max="12" required></div>
+      <div class="nb-veld"><label class="nb-lbl">Huisdieren</label><input class="nb-inp" type="number" id="nb-huisdieren" min="0" value="0" oninput="nbBerekenSchoonmaak()"></div>
+    </div>
+    <div class="nb-rij">
+      <div class="nb-veld"><label class="nb-lbl">Bedlinnen</label><input class="nb-inp" type="number" id="nb-bedlinnen" min="0" value="0" oninput="nbBerekenExtras()"></div>
+      <div class="nb-veld"><label class="nb-lbl">Keukenlinnen</label><input class="nb-inp" type="number" id="nb-keuken" min="0" value="0" oninput="nbBerekenExtras()"></div>
+    </div>
+    <div class="nb-rij nb-rij-1">
+      <div class="nb-veld">
+        <label class="nb-lbl">Toegangscode</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="nb-inp" type="text" id="nb-code" style="max-width:140px;flex-shrink:0">
+          <button type="button" onclick="nbGenereerCode()" style="padding:10px 14px;background:var(--gold);color:#fff;border:none;border-radius:4px;font-size:.82rem;cursor:pointer;white-space:nowrap">🎲 Genereer</button>
+          <button type="button" id="nb-nuki-btn" onclick="legVastInNuki()" style="padding:10px 14px;background:#2e7d32;color:#fff;border:none;border-radius:4px;font-size:.82rem;cursor:pointer;white-space:nowrap">🔒 Leg vast</button>
+        </div>
+        <div id="nb-nuki-status" style="display:none;font-size:.75rem;margin-top:4px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Financieel -->
+  <div class="nb-sectie" style="margin-top:32px">
+    <div class="nb-sectie-titel">Financieel</div>
+    <div class="nb-fin-grid">
+      <div class="nb-veld"><label class="nb-lbl">Huurprijs excl. schoonmaak (€)</label><input class="nb-inp" type="number" id="nb-huurprijs" min="0" step="0.01" oninput="nbBerekenTotaal()"></div>
+      <div class="nb-veld"><label class="nb-lbl">Borg (€)</label><input class="nb-inp" type="number" id="nb-borg" min="0" step="0.01" oninput="nbBerekenTotaal()"></div>
+      <div class="nb-veld"><label class="nb-lbl">Prijs extra's (€) <span class="nb-sub">bed ×€10 + keuken ×€7</span></label><input class="nb-inp" type="number" id="nb-extras" min="0" step="0.01" value="0" oninput="nbBerekenTotaal()"></div>
+      <div class="nb-veld"><label class="nb-lbl">Totale huursom (€) <span class="nb-sub">excl. schoonmaak</span></label><input class="nb-inp" type="number" id="nb-totaal" min="0" step="0.01" readonly style="background:var(--bg);color:var(--text-3)"></div>
+      <div class="nb-veld"><label class="nb-lbl">Aanbetaling (€) <span class="nb-sub">25% + borg</span></label><input class="nb-inp" type="number" id="nb-aanbetaling" min="0" step="0.01" readonly style="background:var(--bg);color:var(--text-3)"></div>
+      <div class="nb-veld"><label class="nb-lbl">Restant (€) <span class="nb-sub">75%</span></label><input class="nb-inp" type="number" id="nb-restant" min="0" step="0.01" readonly style="background:var(--bg);color:var(--text-3)"></div>
+      <div class="nb-veld"><label class="nb-lbl">Prijs schoonmaak (€) <span class="nb-sub">€90 + €10/huisdier</span></label><input class="nb-inp" type="number" id="nb-schoonmaak" min="0" step="0.01" value="90" oninput="nbBerekenTotaal()"></div>
+    </div>
+  </div>
+
+</form>
+
+    <!-- Dropdown verwerken -->
+    <div style="margin-top:20px;margin-bottom:32px;position:relative" id="nb-verwerk-wrapper">
+      <div style="display:flex;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.15)">
+        <button type="button" id="nb-verwerk-btn" onclick="voerVerwerkingUit()"
+          style="flex:1;background:var(--gold);color:#fff;border:none;padding:15px 18px;font-size:.88rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px">
+          <span id="nb-verwerk-icon">💾</span>
+          <span id="nb-verwerk-label">Alleen gegevens opslaan</span>
+        </button>
+        <button type="button" onclick="toggleVerwerkMenu()" aria-label="Meer opties"
+          style="background:var(--gold);color:#fff;border:none;border-left:1px solid rgba(255,255,255,.3);padding:15px 16px;cursor:pointer;font-size:1rem">▾</button>
+      </div>
+      <div id="nb-verwerk-menu" style="display:none;position:absolute;bottom:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:200;overflow:hidden">
+        <button type="button" onclick="selecteerVerwerking('opslaan','💾','Alleen gegevens opslaan')"
+          class="nb-menu-opt" id="nb-opt-opslaan">
+          💾 Alleen gegevens opslaan
+          <span class="nb-menu-sub">Boeking vastleggen, geen PDF, geen e-mail</span>
+        </button>
+        <button type="button" onclick="selecteerVerwerking('pdf','📄','Genereer bevestiging (PDF)')"
+          class="nb-menu-opt" id="nb-opt-pdf">
+          📄 Genereer bevestiging (PDF)
+          <span class="nb-menu-sub">PDF aanmaken en downloaden, niet versturen</span>
+        </button>
+        <button type="button" onclick="selecteerVerwerking('verstuur-info','📧','Verstuur bevestiging naar info')"
+          class="nb-menu-opt" id="nb-opt-info">
+          📧 Verstuur bevestiging naar info
+          <span class="nb-menu-sub">PDF per e-mail naar info@debroekhof.nl</span>
+        </button>
+        <button type="button" onclick="selecteerVerwerking('verstuur-huurder','✉️','Verstuur bevestiging naar huurder')"
+          class="nb-menu-opt" id="nb-opt-huurder">
+          ✉️ Verstuur bevestiging naar huurder
+          <span class="nb-menu-sub">PDF naar huurder, cc naar info@debroekhof.nl</span>
+        </button>
+        <button type="button" onclick="selecteerVerwerking('informeer-sleutelbeheerder','🔑','Informeer sleutelbeheerder')"
+          class="nb-menu-opt" id="nb-opt-sleutel">
+          🔑 Informeer sleutelbeheerder
+          <span class="nb-menu-sub">Boekingenoverzicht naar <span class="sleutel-adres">de sleutelbeheerder</span>, cc info</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Tweede dropdown: Herinneringsmail -->
+    <div style="margin-bottom:32px;position:relative" id="nb-herinnering-wrapper">
+      <div style="display:flex;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.15)">
+        <button type="button" id="nb-herinnering-btn" onclick="voerHerinneringUit()"
+          style="flex:1;background:#4a4a48;color:#fff;border:none;padding:14px 18px;font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px">
+          <span id="nb-herinnering-icon">📨</span>
+          <span id="nb-herinnering-label">Verstuur herinnering naar info</span>
+        </button>
+        <button type="button" onclick="toggleHerinneringMenu()" aria-label="Meer opties"
+          style="background:#4a4a48;color:#fff;border:none;border-left:1px solid rgba(255,255,255,.2);padding:14px 16px;cursor:pointer;font-size:1rem">▾</button>
+      </div>
+      <div id="nb-herinnering-menu" style="display:none;position:absolute;bottom:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.15);z-index:200;overflow:hidden">
+        <button type="button" onclick="selecteerHerinnering('info','📨','Verstuur herinnering naar info')"
+          class="nb-menu-opt nb-herinnering-geselecteerd" id="nb-her-opt-info">
+          📨 Verstuur herinnering naar info
+          <span class="nb-menu-sub">Aankomstmail naar info@debroekhof.nl</span>
+        </button>
+        <button type="button" onclick="selecteerHerinnering('huurder','✉️','Verstuur herinnering naar huurder')"
+          class="nb-menu-opt" id="nb-her-opt-huurder">
+          ✉️ Verstuur herinnering naar huurder
+          <span class="nb-menu-sub">Aankomstmail naar huurder, cc info@debroekhof.nl</span>
+        </button>
+        <button type="button" onclick="selecteerHerinnering('sleutelbeheerder','🔑','Verstuur herinnering naar sleutelbeheerder')"
+          class="nb-menu-opt" id="nb-her-opt-sleutel">
+          🔑 Verstuur herinnering naar sleutelbeheerder
+          <span class="nb-menu-sub">Aankomstmail naar <span class="sleutel-adres">de sleutelbeheerder</span>, cc info</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Verborgen velden voor compatibiliteit -->
+    <input type="hidden" id="nb-stuur-huurder" value="0">
+
+    </div>
+  </div>
+</div>
+
+<!-- ─── Betalingen ─────────────────────────────────────────── -->
+<div id="page-betalingen" style="display:none">
+  <div style="max-width:900px;margin:0 auto;padding:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <h2 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--text);margin:0">Betalingen</h2>
+        <p style="color:var(--text-3);font-size:.8rem;margin:2px 0 0">Verwachte betalingen en terugbetalingen</p>
+      </div>
+      <button onclick="laadFinancieel()" id="fin-refresh" style="background:transparent;border:1px solid var(--border);color:var(--text-3);font-size:.7rem;font-weight:600;cursor:pointer;padding:6px 12px;border-radius:4px">↺ Verversen</button>
+    </div>
+    <div id="fin-inhoud" style="color:var(--text-3);text-align:center;padding:40px 0">Laden…</div>
+  </div>
+</div>
+
+<!-- ─── Financieel bewerk-modal ────────────────────────────── -->
+<div id="fin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--card);border-radius:8px;width:100%;max-width:440px;padding:24px;box-shadow:0 8px 40px rgba(0,0,0,.3)">
+    <h3 style="margin:0 0 16px;font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--text)" id="fin-modal-titel">Bewerken</h3>
+    <div style="margin-bottom:12px">
+      <label style="font-size:.75rem;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Verwachte datum</label>
+      <input type="date" id="fin-modal-datum" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:.9rem;background:var(--light,#fff);color:var(--text);box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:.75rem;font-weight:600;color:var(--text-3);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Notitie</label>
+      <textarea id="fin-modal-notitie" rows="3" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:.9rem;background:var(--light,#fff);color:var(--text);resize:vertical;box-sizing:border-box;font-family:inherit"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="sluitFinModal()" style="background:transparent;border:1px solid var(--border);color:var(--text-3);padding:8px 16px;border-radius:4px;cursor:pointer;font-size:.85rem">Annuleren</button>
+      <button onclick="slaFinModalOp()" style="background:var(--gold);color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:.85rem;font-weight:600">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Release notes ──────────────────────────────────────── -->
+<div id="rn-modal" onclick="if(event.target===this)this.style.display='none'" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--card);border-radius:8px;width:100%;max-width:480px;max-height:80vh;overflow:auto;padding:24px;box-shadow:0 8px 40px rgba(0,0,0,.3);font-size:.88rem;color:var(--text-2)">
+    <h3 style="margin:0 0 16px;font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--text)">Versies</h3>
+    <div id="rn-inhoud"></div>
+    <div style="text-align:right"><button onclick="document.getElementById('rn-modal').style.display='none'" style="background:var(--gold);color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:.85rem;font-weight:600">Sluiten</button></div>
+  </div>
+</div>
+
+<p style="text-align:center;margin:32px 0 20px;font-size:.75rem"><a href="#" id="app-versie" onclick="openReleasenotes();return false" style="color:var(--text-3);text-decoration:none">Versie</a></p>
+
+</div><!-- #main-content -->
+
 <script>
-fetch('/releasenotes.json?t=' + Date.now(), { cache: 'no-store' })
-  .then(r => r.json())
-  .then(n => { document.getElementById('versie').textContent = 'Versie ' + n.versies[0].versie; })
-  .catch(() => {});
+
+// ── Financieel overzicht ──────────────────────────────────────────────────
+
+let finItems    = [];   // alle betalingsregels
+let finEditId   = null; // huidig bewerkt item-id
+
+// Berekent verwachte betalingsdatums vanuit een boeking
+function berekenBetalingen(b) {
+  function parseNL(s) {
+    if (!s) return null;
+    const p = s.split('-');
+    if (p.length === 3 && p[2].length === 4) return new Date(p[2], p[1]-1, p[0]);
+    return null;
+  }
+  function addDagen(d, n) { const r = new Date(d); r.setDate(r.getDate()+n); return r; }
+  function isoDate(d) { return d ? d.toISOString().slice(0,10) : ''; }
+  function fmtNL(d) {
+    if (!d) return '';
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    return `${dd}-${mm}-${d.getFullYear()}`;
+  }
+  const maanden = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  function fmtKort(d) {
+    if (!d) return '';
+    return `${d.getDate()} ${maanden[d.getMonth()]}`;
+  }
+
+  const naam       = b.achternaam;
+  const aankomst   = parseNL(b.aankomst);
+  const vertrek    = parseNL(b.vertrek);
+  const tijdstempel = parseNL(b.tijdstempel);
+  const aanbetaling = parseFloat(b.aanbetaling) || 0;
+  const restant     = parseFloat(b.restant) || 0;
+  const borg        = parseFloat(b.borg) || 0;
+  const items = [];
+
+  // 1. Aanbetaling: uiterlijk 1 week na tijdstempel (boekingsdatum)
+  if (aanbetaling > 0 && tijdstempel) {
+    const aanbetalingDatum = addDagen(tijdstempel, 7);
+    items.push({
+      id:      `${b.rijnr}-aanbetaling`,
+      rijnr:   b.rijnr,
+      type:    'aanbetaling',
+      naam,
+      aankomst: b.aankomst,
+      datum:   isoDate(aanbetalingDatum),
+      datumLabel: fmtKort(aanbetalingDatum),
+      bedrag:  aanbetaling,
+      label:   'Aanbetaling',
+      kleur:   '#2e7d32',
+    });
+  }
+
+  // 2. Restant: uiterlijk 4 weken voor aankomst
+  if (restant > 0 && aankomst) {
+    const restantDatum = addDagen(aankomst, -28);
+    items.push({
+      id:      `${b.rijnr}-restant`,
+      rijnr:   b.rijnr,
+      type:    'restant',
+      naam,
+      aankomst: b.aankomst,
+      datum:   isoDate(restantDatum),
+      datumLabel: fmtKort(restantDatum),
+      bedrag:  restant,
+      label:   'Restant',
+      kleur:   '#1565c0',
+    });
+  }
+
+  // 3. Borg terugbetaling: uiterlijk 1 week na vertrek
+  if (borg > 0 && vertrek) {
+    const borgDatum = addDagen(vertrek, 7);
+    items.push({
+      id:      `${b.rijnr}-borg`,
+      rijnr:   b.rijnr,
+      type:    'borg',
+      naam,
+      aankomst: b.aankomst,
+      datum:   isoDate(borgDatum),
+      datumLabel: fmtKort(borgDatum),
+      bedrag:  -borg,
+      label:   'Borg terug',
+      kleur:   '#c62828',
+    });
+  }
+
+  return items;
+}
+
+async function laadFinancieel() {
+  const container = document.getElementById('fin-inhoud');
+  container.innerHTML = '<p style="color:var(--text-3);text-align:center;padding:40px 0">Laden…</p>';
+
+  try {
+    // Boekingen laden
+    const resp = await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actie: 'laadBoekingen' })
+    });
+    const json = await resp.json();
+    if (json.status !== 'ok') throw new Error(json.message);
+
+    // Financiële status laden (vinkjes, notities, aangepaste datums)
+    const respFin = await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actie: 'laadFinancieelStatus' })
+    });
+    const finStatus = await respFin.json();
+    const statusMap = finStatus.status === 'ok' ? finStatus.data : {};
+
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    // Bereken betalingen voor elke boeking
+    let items = [];
+    for (const b of json.boekingen) {
+      // DEBUG: log elk boeking-object voor Verleg
+      if ((b.achternaam || '').toLowerCase().includes('verleg')) {
+        console.log('[DEBUG Verleg] rijnr:', b.rijnr,
+          '| aankomst:', b.aankomst,
+          '| aanbetaling:', b.aanbetaling,
+          '| restant:', b.restant,
+          '| borg:', b.borg,
+          '| tijdstempel:', b.tijdstempel);
+      }
+      const betalingen = berekenBetalingen(b);
+      if ((b.achternaam || '').toLowerCase().includes('verleg')) {
+        console.log('[DEBUG Verleg] berekenBetalingen geeft:', betalingen);
+      }
+      for (const item of betalingen) {
+        const st = statusMap[item.id] || {};
+        if ((b.achternaam || '').toLowerCase().includes('verleg')) {
+          console.log('[DEBUG Verleg] item:', item.id, '| verwijderd:', st.verwijderd, '| datum:', item.datum);
+        }
+        if (st.verwijderd) continue;  // skip verwijderde regels
+        item.betaald  = st.betaald  || false;
+        item.notitie  = st.notitie  || '';
+        if (st.datum) item.datum = st.datum;
+        items.push(item);  // push hier, niet buiten de loop
+      }
+    }
+
+    // Sorteer op datum, verwijder te ver verleden (> 30 dagen geleden)
+    const cutoff = new Date(today); cutoff.setDate(cutoff.getDate() - 90);
+    items = items
+      .filter(item => new Date(item.datum) >= cutoff)
+      .sort((a,b) => new Date(a.datum) - new Date(b.datum));
+
+    finItems = items;
+    renderFinancieel(items, today);
+
+  } catch(e) {
+    container.innerHTML = `<p style="color:#c62828;text-align:center;padding:40px">⚠ ${e.message}</p>`;
+  }
+}
+
+function renderFinancieel(items, today) {
+  const container = document.getElementById('fin-inhoud');
+  if (!items.length) {
+    container.innerHTML = '<p style="color:var(--text-3);text-align:center;padding:40px">Geen verwachte betalingen</p>';
+    return;
+  }
+
+  const maanden = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const dagNamen = ['zo','ma','di','wo','do','vr','za'];
+
+  let html = `
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:.88rem">
+      <thead>
+        <tr style="border-bottom:2px solid var(--gold)">
+          <th style="text-align:left;padding:8px 10px;color:var(--text-3);font-weight:600;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;width:130px">Datum</th>
+          <th style="text-align:left;padding:8px 10px;color:var(--text-3);font-weight:600;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase">Huurder / aankomst</th>
+          <th style="text-align:left;padding:8px 10px;color:var(--text-3);font-weight:600;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase">Type</th>
+          <th style="text-align:right;padding:8px 10px;color:var(--text-3);font-weight:600;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase">Bedrag</th>
+          <th style="text-align:center;padding:8px 10px;color:var(--text-3);font-weight:600;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase">✓</th>
+          <th style="padding:8px 10px;min-width:140px"></th>
+        </tr>
+      </thead>
+      <tbody>`;
+
+  for (const item of items) {
+    const d      = new Date(item.datum);
+    const isVervallen = d < today && !item.betaald;
+    const isVandaag   = d.toDateString() === today.toDateString();
+    const isBetaald   = item.betaald;
+    const isUitgaand  = item.bedrag < 0;
+
+    const datumStr = `${dagNamen[d.getDay()]} ${d.getDate()} ${maanden[d.getMonth()]}`;
+    const bedragStr = (isUitgaand ? '− ' : '+ ') + '€ ' + Math.abs(item.bedrag).toLocaleString('nl-NL');
+
+    const rijKleur = isBetaald
+      ? 'rgba(0,0,0,.03)'
+      : isVervallen
+        ? 'rgba(198,40,40,.05)'
+        : isVandaag
+          ? 'rgba(255,193,7,.08)'
+          : 'transparent';
+
+    const tekstKleur = isBetaald ? 'var(--text-3)' : 'var(--text)';
+    const doorhalen  = isBetaald ? 'text-decoration:line-through;' : '';
+
+    html += `
+      <tr style="border-bottom:1px solid var(--border);background:${rijKleur}" id="fin-rij-${item.id.replace(/[^a-z0-9]/gi,'-')}">
+        <td style="padding:10px 10px;color:${isVervallen && !isBetaald ? '#c62828' : 'var(--text)'};font-weight:${isVandaag ? '700' : '400'}">${datumStr}${isVervallen ? ' <span style="font-size:.7rem">⚠</span>' : ''}</td>
+        <td style="padding:10px 10px;${doorhalen}color:${tekstKleur}">
+          <strong>${item.naam}</strong>
+          <small style="color:var(--text-3);display:block">${item.aankomst}</small>
+          ${item.notitie ? `<small style="color:var(--gold);font-style:italic">${item.notitie}</small>` : ''}
+        </td>
+        <td style="padding:10px 10px">
+          <span style="background:${item.kleur}22;color:${item.kleur};padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:600">${item.label}</span>
+        </td>
+        <td style="padding:10px 10px;text-align:right;font-weight:600;color:${isUitgaand ? '#c62828' : '#2e7d32'};${doorhalen}">${bedragStr}</td>
+        <td style="padding:10px 10px;text-align:center">
+          <input type="checkbox" ${item.betaald ? 'checked' : ''}
+            onchange="toggleBetaald('${item.id}',this.checked)"
+            style="width:16px;height:16px;accent-color:var(--gold);cursor:pointer">
+        </td>
+        <td style="padding:6px 10px;text-align:right;white-space:nowrap">
+          <button onclick="bewerkFinItem('${item.id}')" title="Bewerken" style="background:transparent;border:1px solid var(--border);border-radius:4px;cursor:pointer;padding:3px 7px;font-size:.8rem;color:var(--text-3)">✏️</button>
+          <button onclick="verwijderFinItem('${item.id}')" title="Verwijderen" style="background:transparent;border:1px solid var(--border);border-radius:4px;cursor:pointer;padding:3px 7px;font-size:.8rem;color:var(--text-3);margin-left:4px">🗑️</button>
+        </td>
+      </tr>`;
+  }
+
+  html += `</tbody></table></div>`;
+  container.innerHTML = html;
+}
+
+async function toggleBetaald(itemId, betaald) {
+  const item = finItems.find(i => i.id === itemId);
+  if (item) item.betaald = betaald;
+  try {
+    await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actie: 'slaFinancieelStatus', id: itemId, betaald, notitie: item?.notitie || '', datum: item?.datum || '' })
+    });
+    // Herrender zodat stijl bijwerkt
+    const today = new Date(); today.setHours(0,0,0,0);
+    renderFinancieel(finItems, today);
+  } catch(e) { console.error(e); }
+}
+
+function bewerkFinItem(itemId) {
+  const item = finItems.find(i => i.id === itemId);
+  if (!item) return;
+  finEditId = itemId;
+  document.getElementById('fin-modal-titel').textContent = `${item.naam} – ${item.label}`;
+  document.getElementById('fin-modal-datum').value   = item.datum || '';
+  document.getElementById('fin-modal-notitie').value = item.notitie || '';
+  document.getElementById('fin-modal').style.display = 'flex';
+}
+
+function sluitFinModal() {
+  document.getElementById('fin-modal').style.display = 'none';
+  finEditId = null;
+}
+
+async function slaFinModalOp() {
+  if (!finEditId) return;
+  const item   = finItems.find(i => i.id === finEditId);
+  if (!item) return;
+  item.datum   = document.getElementById('fin-modal-datum').value;
+  item.notitie = document.getElementById('fin-modal-notitie').value.trim();
+  sluitFinModal();
+  try {
+    await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actie: 'slaFinancieelStatus', id: item.id, betaald: item.betaald, notitie: item.notitie, datum: item.datum })
+    });
+    const today = new Date(); today.setHours(0,0,0,0);
+    renderFinancieel(finItems, today);
+  } catch(e) { console.error(e); }
+}
+
+async function verwijderFinItem(itemId) {
+  if (!confirm('Deze betalingsregel verwijderen uit het overzicht?')) return;
+  finItems = finItems.filter(i => i.id !== itemId);
+  try {
+    await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actie: 'verwijderFinancieelStatus', id: itemId })
+    });
+    const today = new Date(); today.setHours(0,0,0,0);
+    renderFinancieel(finItems, today);
+  } catch(e) { console.error(e); }
+}
+
+document.getElementById('fin-modal').addEventListener('click', function(e) {
+  if (e.target === this) sluitFinModal();
+});
+
+// Kalender wordt gestart via DOMContentLoaded onderaan
+
+
+// ── Kalender homepage ─────────────────────────────────────────────────────
+let kalBoekingen = [];
+let kalMaand = new Date().getMonth();
+let kalJaar  = new Date().getFullYear();
+
+const MAANDEN_NL = ['Januari','Februari','Maart','April','Mei','Juni',
+                    'Juli','Augustus','September','Oktober','November','December'];
+
+function toonKalender() {
+  toonPagina('page-kalender');
+  if (!kalBoekingen.length) laadKalender();
+  else renderKalender();
+}
+
+function toonBetalingen() {
+  toonPagina('page-betalingen');
+  laadFinancieel();
+}
+
+async function laadKalender() {
+  document.getElementById('kal-inhoud').textContent = 'Laden…';
+  try {
+    const resp = await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actie: 'laadBoekingen' })
+    });
+    const json = await resp.json();
+    if (json.status !== 'ok') throw new Error(json.message);
+    kalBoekingen = json.boekingen;
+    renderKalender();
+  } catch(e) {
+    document.getElementById('kal-inhoud').innerHTML =
+      '<p style="color:#c62828;text-align:center;padding:40px">⚠ ' + e.message + '</p>';
+  }
+}
+
+function kalenderMaand(delta) {
+  kalMaand += delta;
+  if (kalMaand > 11) { kalMaand = 0;  kalJaar++; }
+  if (kalMaand < 0)  { kalMaand = 11; kalJaar--; }
+  renderKalender();
+}
+
+// Sla boeking-data op in een map voor veilige onclick-referentie
+const kalBoekingMap = {};
+
+function renderKalender() {
+  document.getElementById('kal-label').textContent = MAANDEN_NL[kalMaand] + ' ' + kalJaar;
+
+  function parseNL(s) {
+    if (!s) return null;
+    const p = s.split('-');
+    if (p.length === 3 && p[2].length === 4)
+      return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
+    return null;
+  }
+
+  // Bouw dagMap voor huidige maand
+  const dagMap = {};
+  const maandStart = new Date(kalJaar, kalMaand, 1);
+  const maandEind  = new Date(kalJaar, kalMaand + 1, 0);
+
+  for (const b of kalBoekingen) {
+    const start = parseNL(b.aankomst);
+    const eind  = parseNL(b.vertrek);
+    if (!start || !eind || eind < maandStart || start > maandEind) continue;
+
+    // Bewaar in map voor onclick
+    kalBoekingMap[b.rijnr] = b;
+
+    // Clip periode tot huidige maand
+    const vanDag  = Math.max(1, start <= maandStart ? 1 : start.getDate());
+    const totDag  = Math.min(maandEind.getDate(), eind >= maandEind ? maandEind.getDate() : eind.getDate());
+
+    for (let d = vanDag; d <= totDag; d++) {
+      if (!dagMap[d]) dagMap[d] = [];
+      if (!dagMap[d].find(x => x.rijnr === b.rijnr)) dagMap[d].push(b);
+    }
+  }
+
+  const aantalDagen = maandEind.getDate();
+  let startKolom = maandStart.getDay(); // 0=zo
+  if (startKolom === 0) startKolom = 7;
+  startKolom--;
+
+  const vandaag = new Date();
+  const dagNamen = ['Ma','Di','Wo','Do','Vr','Za','Zo'];
+  let html = '<div class="kal-grid">';
+  dagNamen.forEach(d => { html += `<div class="kal-dag-naam">${d}</div>`; });
+  for (let i = 0; i < startKolom; i++) html += '<div class="kal-cel leeg"></div>';
+
+  for (let dag = 1; dag <= aantalDagen; dag++) {
+    const boekingen = dagMap[dag] || [];
+    const isBezet   = boekingen.length > 0;
+    const isVandaag = dag === vandaag.getDate() &&
+                      kalMaand === vandaag.getMonth() &&
+                      kalJaar  === vandaag.getFullYear();
+
+    let klasse = 'kal-cel';
+    if (isBezet)   klasse += ' bezet';
+    if (isVandaag && !isBezet) klasse += ' vandaag';
+
+    let inhoud = `<div class="kal-dag-nr">${dag}</div>`;
+    const uniek = [...new Map(boekingen.map(b => [b.rijnr, b])).values()];
+    uniek.forEach(b => {
+      // Gebruik rijnr als sleutel — geen inline JSON meer
+      inhoud += `<div class="kal-naam" onclick="kalKlikBoeking(${b.rijnr})">${b.achternaam}</div>`;
+    });
+
+    html += `<div class="${klasse}">${inhoud}</div>`;
+  }
+
+  html += '</div>';
+  document.getElementById('kal-inhoud').innerHTML = html;
+}
+
+function kalKlikBoeking(rijnr) {
+  const b = kalBoekingMap[rijnr] || (window._boekMap && window._boekMap[rijnr]);
+  if (!b) return;
+  // Merge into _boekMap for consistent access
+  window._boekMap = window._boekMap || {};
+  window._boekMap[rijnr] = b;
+  bewerkBoeking(rijnr, encodeURIComponent(JSON.stringify(b)));
+  setNav(document.getElementById('nav-nb'));
+}
+
+// Override laadFinancieel init — don't auto-load on page start
+// (it's called when switching to Betalingen)
+// ── Boekingen ─────────────────────────────────────────────────────────────
+// Google Sheets gepubliceerd als CSV:
+// Bestand → Delen → Publiceren op het web → Tabblad als CSV
+// Boekingen worden geladen via proxy → Apps Script (zodat rijnummers beschikbaar zijn)
+// Publiceer de nieuwe sheet ook via Bestand → Delen → Publiceren op het web → TSV
+const SHEET_CSV_URL = 'NIEUWE_TSV_URL_HIER'; // tijdelijk, wordt vervangen door proxy
+
+let boekFilter = 'komend'; // 'alles' | 'komend' | 'huidig' | 'verleden'
+
+function openBoekingen() {
+  toonPagina('page-boekingen');
+  laadBoekingen();
+}
+function sluitBoekingen() { /* no-op */ }
+/* boek-modal removed - now a page */
+(function() { // dummy block to replace removed listener
+});
+
+async function laadBoekingen() {
+  const inhoud = document.getElementById('boek-inhoud');
+  const status = document.getElementById('boek-status');
+  inhoud.innerHTML = '<p style="color:var(--text-3);font-size:.88rem;text-align:center;padding:20px">Laden…</p>';
+  status.textContent = '';
+  try {
+    const res = await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actie: 'laadBoekingen' })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if (json.status !== 'ok') throw new Error(json.message || 'Fout bij laden');
+    const boekingen = json.boekingen;
+    status.textContent = `${boekingen.length} boekingen`;
+    renderBoekingen(boekingen);
+  } catch(e) {
+    inhoud.innerHTML = `<div class="boek-leeg">
+      ⚠️ Kan boekingen niet laden.<br><small style="color:var(--text-3)">${e.message}</small>
+    </div>`;
+  }
+}
+
+function parseBoekCSV(csv) {
+  const lines = csv.trim().split('\n');
+  if (lines.length < 2) return [];
+  // TSV: kolommen gescheiden door tabs
+  // Lees de headerrij en zoek kolommen op naam (robuust tegen verschuivingen in de sheet)
+  const headers = lines[0].split('\t').map(h => h.trim().toLowerCase());
+  const col = name => headers.indexOf(name);
+
+  // Vaste fallback-indices (op basis van werkelijke sheet, kolom 0 = tijdstempel)
+  const FALLBACK = { aankomst:2, vertrek:3, aanhef:4, voornaam:5, achternaam:6,
+    personen:7, huisdieren:8, bedlinnen:9, keuken:10, schoonmaak:12,
+    telefoon:19, email:24, code:26, checkIn:27, checkOut:28 };
+
+  // Kolomnamen exact zoals ze in de Google Sheet header staan
+  const NAMES = {
+    aankomst:  ['datum start', 'aankomst', 'aankomstdatum'],
+    vertrek:   ['datum eind', 'vertrek', 'vertrekdatum'],
+    aanhef:    ['aanhef'],
+    voornaam:  ['voornaam'],
+    achternaam:['achternaam'],
+    personen:  ['aantal personen', 'personen'],
+    huisdieren:['aantal huisdieren', 'huisdieren'],
+    bedlinnen: ['aantal bedlinnen', 'bedlinnen'],
+    keuken:    ['aantal keukenlinnen', 'keukenlinnen', 'keuken'],
+    schoonmaak:['prijs schoonmaak', 'schoonmaak', 'schoonmaakkosten'],
+    telefoon:  ['telefoonnummer', 'telefoon'],
+    email:     ['e-mail', 'e-mailadres', 'email'],
+    code:      ['toegangscode', 'code'],
+    checkIn:   ['tijdstip check in', 'check-in tijd', 'checkin'],
+    checkOut:  ['tijdstip check out', 'check-out tijd', 'checkout'],
+  };
+
+  // Bouw IDX: eerst exacte match, dan gedeeltelijke match, dan fallback
+  const IDX = {};
+  for (const [field, candidates] of Object.entries(NAMES)) {
+    let found = -1;
+    // Stap 1: exacte match
+    for (const c of candidates) {
+      found = headers.findIndex(h => h === c);
+      if (found >= 0) break;
+    }
+    // Stap 2: gedeeltelijke match (alleen als geen exacte match)
+    if (found < 0) {
+      for (const c of candidates) {
+        found = headers.findIndex(h => h.includes(c));
+        if (found >= 0) break;
+      }
+    }
+    IDX[field] = found >= 0 ? found : FALLBACK[field];
+  }
+
+  const boekingen = [];
+  for (let i = 1; i < lines.length; i++) {
+    const vals = lines[i].split('\t');
+    if (vals.length < 5) continue;
+    const g = idx => (idx >= 0 && vals[idx] !== undefined ? vals[idx] : '').trim();
+    if (!g(IDX.aankomst)) continue;
+    boekingen.push({
+      aankomst: g(IDX.aankomst), vertrek: g(IDX.vertrek),
+      aanhef: g(IDX.aanhef), voornaam: g(IDX.voornaam), achternaam: g(IDX.achternaam),
+      personen: g(IDX.personen), huisdieren: g(IDX.huisdieren),
+      bedlinnen: g(IDX.bedlinnen), keuken: g(IDX.keuken),
+      schoonmaak: g(IDX.schoonmaak), telefoon: g(IDX.telefoon),
+      email: g(IDX.email), code: g(IDX.code),
+      checkIn: g(IDX.checkIn), checkOut: g(IDX.checkOut)
+    });
+  }
+  // Debug: toon gevonden kolom-indices in de console
+  console.log('[Broekhof] Sheet headers:', headers);
+  console.log('[Broekhof] Kolom-indices gebruikt:', IDX);
+  return boekingen;
+}
+function splitCSVLine(line) {
+  const result = [], re = /(?:^|,)("(?:[^"]|"")*"|[^,]*)/g;
+  let m;
+  while ((m = re.exec(line)) !== null) result.push(m[1]);
+  return result;
+}
+
+function parseDate(s) {
+  if (!s) return null;
+  // DD-MM-YYYY of D-M-YYYY
+  let m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  // DD/MM/YYYY
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) return new Date(+m[3], +m[2]-1, +m[1]);
+  // YYYY-MM-DD
+  m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  // M/D/YYYY (Google Sheets US formaat)
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) return new Date(+m[3], +m[1]-1, +m[2]);
+  return null;
+}
+
+function boekingenStatus(aankomst, vertrek) {
+  const nu = new Date(); nu.setHours(0,0,0,0);
+  const a = parseDate(aankomst), v = parseDate(vertrek);
+  if (!a || !v) return 'onbekend';
+  if (v < nu) return 'verleden';
+  if (a <= nu && v >= nu) return 'huidig';
+  return 'komend';
+}
+
+function renderBoekingen(boekingen) {
+  const inhoud = document.getElementById('boek-inhoud');
+  const nu = new Date(); nu.setHours(0,0,0,0);
+
+  // Filter
+  const gefilterd = boekingen.filter(b => {
+    const st = boekingenStatus(b.aankomst, b.vertrek);
+    if (boekFilter === 'alles') return true;
+    return st === boekFilter || (boekFilter === 'komend' && st === 'huidig');
+  });
+
+  // Sorteer op aankomst
+  gefilterd.sort((a, b) => {
+    const da = parseDate(a.aankomst);
+    const db = parseDate(b.aankomst);
+    return (da||0) - (db||0);
+  });
+
+  let html = `<div class="boek-filter">
+    <button class="${boekFilter==='komend'?'sel':''}" onclick="setBoekFilter('komend')">Komend</button>
+    <button class="${boekFilter==='huidig'?'sel':''}" onclick="setBoekFilter('huidig')">Huidig</button>
+    <button class="${boekFilter==='verleden'?'sel':''}" onclick="setBoekFilter('verleden')">Verleden</button>
+    <button class="${boekFilter==='alles'?'sel':''}" onclick="setBoekFilter('alles')">Alle</button>
+  </div>`;
+
+  if (!gefilterd.length) {
+    html += '<div class="boek-leeg">Geen boekingen gevonden voor dit filter.</div>';
+    inhoud.innerHTML = html;
+    return;
+  }
+
+  // Sla boekingen op in een map voor veilige referentie via rijnr
+  window._boekMap = window._boekMap || {};
+  gefilterd.forEach(b => { window._boekMap[b.rijnr] = b; });
+
+  html += '<div class="boek-grid">';
+  gefilterd.forEach(b => {
+    const aankomst   = b.aankomst || '';
+    const vertrek    = b.vertrek || '';
+    const huurder    = [b.aanhef, b.voornaam, b.achternaam].filter(Boolean).join(' ');
+    const telefoon   = b.telefoon || '';
+    const email      = b.email || '';
+    const personen   = b.personen || '';
+    const huisdieren = b.huisdieren || '0';
+    const bedlinnen  = b.bedlinnen || '0';
+    const keuken     = b.keuken || '0';
+    const schoonmaak = b.schoonmaak || '';
+    const code       = b.code || '';
+    const checkIn    = b.checkIn || '';
+    const checkOut   = b.checkOut || '';
+    const opmerking  = (checkOut && checkOut !== '10:00') ? `Let op: vertrektijd ${checkOut} wijkt af!` : '';
+
+    const st = boekingenStatus(aankomst, vertrek);
+    const badgeLabels = { huidig: 'Nu aanwezig', komend: 'Komend', verleden: 'Afgelopen', onbekend: '' };
+    const badge = badgeLabels[st] || '';
+
+    const rijnr = b.rijnr || 0;
+    const bData = encodeURIComponent(JSON.stringify(b));
+    html += `<div class="boek-kaart">
+      <div class="boek-kaart-head">
+        <div class="periode">
+          ${aankomst} ${checkIn ? '<small style="opacity:.8">'+checkIn+'</small>' : ''}<br>
+          <small style="font-weight:400;opacity:.85">t/m ${vertrek} ${checkOut ? '<span style="opacity:.8">'+checkOut+'</span>' : ''}</small>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+          ${badge ? `<span class="badge ${st}">${badge}</span>` : ''}
+          <button onclick="bewerkBoekingViaMap(${rijnr})" title="Bewerken" style="background:rgba(255,255,255,.2);border:none;border-radius:4px;color:#fff;cursor:pointer;padding:3px 6px;font-size:.85rem;line-height:1">✏️</button>
+          <button onclick="verwijderBoeking(${rijnr},'${[b.aanhef,b.voornaam,b.achternaam].filter(Boolean).join(' ')}')" title="Verwijderen" style="background:rgba(255,255,255,.2);border:none;border-radius:4px;color:#fff;cursor:pointer;padding:3px 6px;font-size:.85rem;line-height:1">🗑️</button>
+          <label title="Aankomstmail 4 dagen vooraf naar huurder sturen" style="display:flex;align-items:center;gap:3px;cursor:pointer;background:rgba(255,255,255,.15);border-radius:4px;padding:3px 6px;font-size:.72rem;color:#fff;white-space:nowrap">
+            <input type="checkbox" id="mail-huurder-${rijnr}" ${b.mailHuurder ? 'checked' : ''} onchange="toggleMailHuurder(${rijnr},this.checked)" style="accent-color:#fff;width:13px;height:13px;cursor:pointer">
+            ✉ auto
+          </label>
+        </div>
+      </div>
+      <div class="boek-kaart-body">
+        <div class="boek-row"><span class="ico">👤</span><span class="lbl">Huurder</span><span class="val">${huurder||'—'}</span></div>
+        ${telefoon ? `<div class="boek-row"><span class="ico">📞</span><span class="lbl">Telefoon</span><span class="val"><a href="tel:${telefoon}" style="color:inherit;text-decoration:none">${telefoon}</a></span></div>` : ''}
+        ${email ? `<div class="boek-row"><span class="ico">📧</span><span class="lbl">E-mail</span><span class="val" style="font-size:.78rem">${email}</span></div>` : ''}
+        <div class="boek-row"><span class="ico">👥</span><span class="lbl">Personen</span><span class="val">${personen||'—'}</span></div>
+        <div class="boek-row"><span class="ico">🐾</span><span class="lbl">Huisdieren</span><span class="val">${huisdieren === '0' || !huisdieren ? 'geen' : huisdieren}</span></div>
+        <div class="boek-row"><span class="ico">🛏</span><span class="lbl">Bedlinnen</span><span class="val">${bedlinnen||'0'}</span></div>
+        <div class="boek-row"><span class="ico">🍽</span><span class="lbl">Keukenlinnen</span><span class="val">${keuken||'0'}</span></div>
+        ${schoonmaak ? `<div class="boek-row"><span class="ico">💶</span><span class="lbl">Schoonmaak</span><span class="val">${schoonmaak}</span></div>` : ''}
+        <div class="boek-row"><span class="ico">🚪</span><span class="lbl">Toegangscode</span><span class="val" style="font-weight:700;letter-spacing:.05em">${code||'—'}</span></div>
+        ${opmerking ? `<div class="boek-warn">⚠️ ${opmerking}</div>` : ''}
+        ${/aanvullen/i.test(b.bron || '') ? `<div class="boek-warn">📥 Automatisch ingelezen via Micazu — vul aanhef, contactgegevens, keukenlinnen en borg aan via ✏️ en sla op.</div>` : ''}
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  inhoud.innerHTML = html;
+}
+
+function setBoekFilter(f) {
+  boekFilter = f;
+  laadBoekingen();
+}
+
+
+// ── Huurovereenkomst PDF via Apps Script ─────────────────────────────────
+// Apps Script maakt kopie van Google Docs template, vult placeholders in,
+// exporteert als PDF en stuurt de download-URL terug.
+const DOCS_TEMPLATE_ID = '1Q9IOTnd2Ze5BgRki8sMN9G_S8hwoDYYxg02ThqYXF-w';
+
+async function genereerHuurovereenkomst() {
+  const g = id => document.getElementById(id).value.trim();
+  const btn = document.getElementById('nb-pdf-btn');
+  const errEl = document.getElementById('nb-error');
+  errEl.style.display = 'none';
+
+  const voornaam   = g('nb-voornaam');
+  const achternaam = g('nb-achternaam');
+  const aankomst   = g('nb-aankomst');
+
+  if (!voornaam || !achternaam || !aankomst) {
+    errEl.textContent = '⚠ Vul minimaal naam en aankomstdatum in voor de PDF.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+
+  btn.disabled = true;
+  btn.textContent = '⏳ PDF genereren…';
+
+  // Datum hulpfuncties
+  const maanden = ['januari','februari','maart','april','mei','juni',
+    'juli','augustus','september','oktober','november','december'];
+  const dagen   = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+  function fmtNL(d)   { if(!d) return ''; const[y,m,dd]=d.split('-'); return `${dd}-${m}-${y}`; }
+  function fmtLang(d) {
+    if(!d) return '';
+    const dt = new Date(d + 'T12:00:00');
+    return `${dagen[dt.getDay()]} ${dt.getDate()} ${maanden[dt.getMonth()]} ${dt.getFullYear()}`;
+  }
+  function vandaagNL() {
+    const n = new Date();
+    return `${String(n.getDate()).padStart(2,'0')}-${String(n.getMonth()+1).padStart(2,'0')}-${n.getFullYear()}`;
+  }
+
+  const placeholders = {
+    'Today':                    vandaagNL(),
+    'Aanhef':                   g('nb-aanhef'),
+    'Voornaam':                 voornaam,
+    'Achternaam':               achternaam,
+    'Adres':                    g('nb-adres'),
+    'Postcode':                 g('nb-postcode'),
+    'Plaats':                   g('nb-plaats'),
+    'Land':                     g('nb-land'),
+    'Telefoonnummer':           g('nb-telefoon'),
+    'E-mail':                   g('nb-email'),
+    'Datum start':              fmtLangMetDag(aankomst),
+    'Datum eind':               fmtLangMetDag(g('nb-vertrek')),
+    'Tijdstip check in':        g('nb-checkin'),
+    'Tijdstip check out':       g('nb-checkout'),
+    'Aantal personen':          g('nb-personen'),
+    'Aantal huisdieren':        g('nb-huisdieren'),
+    'Huurprijs excl. schoonmaak en extra\'s': g('nb-huurprijs'),
+    'Borg':                     g('nb-borg') || '0',
+    'Prijs schoonmaak':         '€ ' + g('nb-schoonmaak'),
+    'Totale huursom':           g('nb-totaal'),
+    'Aanbetaling':              g('nb-aanbetaling'),
+    'Restant betaling huursom': g('nb-restant'),
+    'Aantal bedlinnen':         g('nb-bedlinnen'),
+    'Aantal keukenlinnen':      g('nb-keuken'),
+  };
+
+  // Bestandsnaam: YYYY-MM-DD Huurovereenkomst Achternaam
+  const bestandsnaam = `${aankomst} Huurovereenkomst ${achternaam}`;
+
+  // Apps Script blokkeert CORS bij fetch — stuur data via GET met JSON in query param
+  // Apps Script redirect volgt automatisch en geeft JSON terug
+  try {
+    const resp = await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        actie: 'genereerPdf',
+        templateId: DOCS_TEMPLATE_ID,
+        bestandsnaam,
+        placeholders
+      })
+    });
+    const json = await resp.json();
+    if (json.status === 'ok' && json.pdfUrl) {
+      // Maak een tijdelijke download-link en klik erop
+      const a = document.createElement('a');
+      a.href = json.pdfUrl;
+      a.download = (json.naam || bestandsnaam + '.pdf');
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      // Toon ook succesmelding
+      const succEl = document.getElementById('nb-success');
+      succEl.textContent = '✓ PDF gegenereerd: ' + (json.naam || bestandsnaam + '.pdf');
+      succEl.style.display = 'block';
+    } else {
+      throw new Error(json.message || 'Onbekende fout');
+    }
+  } catch(err) {
+    errEl.textContent = '⚠ PDF genereren mislukt: ' + err.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📄 Huurovereenkomst genereren (PDF)';
+  }
+}
+
+
+// ── Boekingen bewerken / verwijderen ─────────────────────────────────────
+let bewerkRijnr = null; // rijnummer van te bewerken boeking
+
+function bewerkBoekingViaMap(rijnr) {
+  const b = window._boekMap && window._boekMap[rijnr];
+  if (!b) { alert('Boeking niet gevonden, ververs de boekingen.'); return; }
+  bewerkBoeking(rijnr, encodeURIComponent(JSON.stringify(b)));
+}
+
+function bewerkBoeking(rijnr, bDataStr) {
+  const b = JSON.parse(decodeURIComponent(bDataStr));
+  bewerkRijnr = rijnr;
+
+  // Formulier vullen met bestaande gegevens
+  function s(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.value = val || '';
+  }
+
+  // Datum terug naar YYYY-MM-DD
+  function nlNaarISO(d) {
+    if (!d) return '';
+    const p = d.split('-');
+    if (p.length === 3 && p[2].length === 4) return `${p[2]}-${p[1]}-${p[0]}`;
+    return d;
+  }
+
+  s('nb-aankomst',   nlNaarISO(b.aankomst));
+  s('nb-vertrek',    nlNaarISO(b.vertrek));
+  s('nb-checkin',    b.checkIn  || '16:00');
+  s('nb-checkout',   b.checkOut || '10:00');
+  s('nb-aanhef',     b.aanhef);
+  s('nb-voornaam',   b.voornaam);
+  s('nb-achternaam', b.achternaam);
+  s('nb-telefoon',   b.telefoon);
+  s('nb-email',      b.email);
+  s('nb-adres',      b.adres);
+  s('nb-postcode',   b.postcode);
+  s('nb-plaats',     b.plaats);
+  s('nb-land',       b.land || 'Nederland');
+  s('nb-personen',   b.personen);
+  s('nb-huisdieren', b.huisdieren || '0');
+  s('nb-bedlinnen',  b.bedlinnen || '0');
+  s('nb-keuken',     b.keuken || '0');
+  console.log('[bewerkBoeking] code:', b.code, 'rijnr:', rijnr);
+  document.getElementById('nb-code').value = b.code || '';
+  s('nb-huurprijs',  b.huurprijs);
+  s('nb-schoonmaak', b.schoonmaak ? b.schoonmaak.replace('€','').trim() : '90');
+  s('nb-extras',     b.extras || '0');
+  s('nb-totaal',     b.totaal);
+  s('nb-aanbetaling',b.aanbetaling);
+  s('nb-restant',    b.restant);
+  s('nb-borg',       b.borg || '0');
+
+  // Knoptekst aanpassen
+  // Knoppen staan altijd zichtbaar, geen tekstwijziging nodig
+
+  // Succes/fout resetten
+  document.getElementById('nb-success').style.display = 'none';
+  document.getElementById('nb-error').style.display   = 'none';
+
+  // Navigeer naar nieuw boeking formulier
+  toonPagina('page-nb');
+  setNav(document.getElementById('nav-nb'));
+}
+
+async function verwijderBoeking(rijnr, naam) {
+  if (!confirm(`Boeking van ${naam} verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
+
+  try {
+    const resp = await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actie: 'verwijderBoeking', rijnr })
+    });
+    const json = await resp.json();
+    if (json.status !== 'ok') throw new Error(json.message);
+    laadBoekingen(); // herlaad de lijst
+  } catch(err) {
+    alert('Verwijderen mislukt: ' + err.message);
+  }
+}
+
+
+// ── Boekingenoverzicht mailen ─────────────────────────────────────────────
+async function stuurOverzicht() {
+  const btn = document.getElementById('boek-overzicht-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Versturen…';
+  try {
+    const resp = await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actie: 'stuurOverzicht' })
+    });
+    const json = await resp.json();
+    if (json.status !== 'ok') throw new Error(json.message);
+    btn.textContent = '✓ Verstuurd!';
+    setTimeout(() => { btn.textContent = '📧 Overzicht mailen'; btn.disabled = false; }, 3000);
+  } catch(err) {
+    alert('Overzicht versturen mislukt: ' + err.message);
+    btn.textContent = '📧 Overzicht mailen';
+    btn.disabled = false;
+  }
+}
+
+// ── Mail-vinkje per boeking opslaan ──────────────────────────────────────
+async function toggleMailHuurder(rijnr, aangevinkt) {
+  try {
+    await beheerApi('proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ actie: 'setMailHuurder', rijnr, waarde: aangevinkt })
+    });
+  } catch(err) {
+    console.error('toggleMailHuurder fout:', err);
+  }
+}
+
+
+// ── Importeer boeking uit Excel ───────────────────────────────────────────
+function importeerBoeking(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const errEl  = document.getElementById('nb-error');
+  const succEl = document.getElementById('nb-success');
+  errEl.style.display  = 'none';
+  succEl.style.display = 'none';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb   = XLSX.read(data, { type: 'array', cellDates: true });
+
+      // Eerste sheet
+      const ws   = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { raw: false, dateNF: 'yyyy-mm-dd' });
+
+      if (!rows.length) throw new Error('Geen rijen gevonden in het bestand');
+
+      // Sorteer op kolom D "Geboekt op" — meest recent bovenaan
+      rows.sort((a, b) => {
+        const da = new Date(a['Geboekt op'] || 0);
+        const db = new Date(b['Geboekt op'] || 0);
+        return db - da; // aflopend
+      });
+
+      const r = rows[0]; // meest recente boeking
+
+      // SheetJS leest kolomnamen — log ze voor debugging
+      console.log('[Import] Kolomnamen:', Object.keys(r));
+      console.log('[Import] Rij data:', r);
+
+      // Haal waarde op via kolomnaam OF kolomindex (robuust)
+      const headers = XLSX.utils.sheet_to_json(ws, { header: 1 })[0] || [];
+      const byIndex = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      // Zoek de rij die overeenkomt met meest recente boeking
+      // rows[0] is al correct gesorteerd
+      // Gebruik zowel naam als index als fallback
+      function kolom(naam, idx) {
+        const val = r[naam];
+        if (val !== undefined && val !== null && val !== '') return val;
+        // Fallback: zoek op kolomindex in de sorted rows array
+        return undefined;
+      }
+
+      // Datum naar YYYY-MM-DD — SheetJS dateNF formaat of serieel getal
+      // Datum naar YYYY-MM-DD — SheetJS geeft M/D/YY of YYYY-MM-DD
+      function toISO(val) {
+        if (!val) return '';
+        const s = String(val).trim();
+        // YYYY-MM-DD
+        if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+        // M/D/YY of MM/DD/YY (SheetJS zonder dateNF)
+        const mdy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+        if (mdy) {
+          const y = mdy[3].length === 2 ? '20' + mdy[3] : mdy[3];
+          const m = mdy[1].padStart(2, '0');
+          const d = mdy[2].padStart(2, '0');
+          return `${y}-${m}-${d}`;
+        }
+        // Excel serieel getal
+        const n = parseFloat(s);
+        if (!isNaN(n) && n > 40000 && n < 60000) {
+          const d = new Date(Math.round((n - 25569) * 86400 * 1000));
+          return d.toISOString().slice(0, 10);
+        }
+        const d = new Date(s);
+        if (!isNaN(d)) return d.toISOString().slice(0, 10);
+        return '';
+      }
+
+      // Telefoon: zet +31 / 31 om naar 0...
+      function fmtTel(val) {
+        if (!val) return '';
+        let s = String(val).replace(/\s+/g, '').replace(/[^0-9+]/g, '');
+        if (s.startsWith('31') && !s.startsWith('+') && s.length === 11) s = '+' + s;
+        if (s.startsWith('+31')) return '0' + s.slice(3);
+        if (s.startsWith('0031')) return '0' + s.slice(4);
+        return s;
+      }
+
+      // Stel veldwaarde in — accepteert ook 0
+      function sv(id, val) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (val !== undefined && val !== null) el.value = String(val).trim();
+      }
+
+      // Extraheer waarden — probeer exacte naam, dan varianten
+      function get(naam, ...varianten) {
+        let val = r[naam];
+        if (val !== undefined && val !== null && val !== '') return val;
+        for (const v of varianten) {
+          val = r[v];
+          if (val !== undefined && val !== null && val !== '') return val;
+        }
+        return '';
+      }
+
+      const voornaam   = String(get('Voornaam') || '').trim();
+      const achternaam = String(get('Achternaam') || '').trim();
+      const volwassenen = parseInt(get('Volwassennen', 'Volwassenen') || 0) || 0;
+      const kinderen    = parseInt(get('Kinderen 3 t/m 17 jaar', 'Kinderen') || 0) || 0;
+      const babies      = parseInt(get("Baby's t/m 2 jaar", 'Babies', 'Baby') || 0) || 0;
+      const personen    = volwassenen + kinderen + babies;
+      const huisdieren  = parseInt(get('Huisdieren') || 0) || 0;
+      // Strip euro-tekens en parse NL/EN bedragen
+      // NL formaat: 1.115,50 (punt=duizendtal, komma=decimaal)
+      // EN formaat: 1,115.50 (komma=duizendtal, punt=decimaal)
+      function num(val) {
+        if (!val && val !== 0) return 0;
+        let s = String(val).replace(/[€\s]/g, '').trim();
+        if (!s) return 0;
+        // Detecteer formaat
+        const heeftPunt   = s.includes('.');
+        const heeftKomma  = s.includes(',');
+        if (heeftPunt && heeftKomma) {
+          // Beide aanwezig: laatste scheidingsteken is decimaal
+          if (s.lastIndexOf('.') > s.lastIndexOf(',')) {
+            // EN: 1,115.50
+            s = s.replace(/,/g, '');
+          } else {
+            // NL: 1.115,50
+            s = s.replace(/\./g, '').replace(',', '.');
+          }
+        } else if (heeftPunt) {
+          // Alleen punt: duizendtal als >3 cijfers erna, anders decimaal
+          const naPunt = s.split('.').pop();
+          if (naPunt.length === 3) s = s.replace('.', ''); // 1.115 → 1115
+          // anders: 1.50 → decimaal, laat staan
+        } else if (heeftKomma) {
+          // Alleen komma: NL decimaalscheidingsteken
+          s = s.replace(',', '.');
+        }
+        return parseFloat(s) || 0;
+      }
+      const huurprijs   = num(get('Prijs vakantiehuis'));
+      const borg        = num(get('Borg')) || num(get('Borg ter plaatse'));
+      const bijkomend   = num(get('Bijkomende kosten'));
+      const schoonmaak  = 90 + (huisdieren * 10);
+      const extras      = Math.max(0, Math.round(bijkomend - schoonmaak));
+
+      sv('nb-aankomst',   toISO(get('Aankomst')));
+      sv('nb-vertrek',    toISO(get('Vertrek')));
+      sv('nb-checkin',    '16:00');
+      sv('nb-checkout',   '10:00');
+      sv('nb-voornaam',   voornaam);
+      sv('nb-achternaam', achternaam);
+
+      // Markeer velden die extra aandacht vereisen na import
+      ['nb-aanhef', 'nb-bedlinnen', 'nb-keuken'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.border = '2px solid #c62828';
+      });
+      sv('nb-telefoon',   fmtTel(get('Telefoonnummer')));
+      sv('nb-email',      get('E-mailadres'));
+      sv('nb-adres',      get('Adres'));
+      sv('nb-postcode',   get('Postcode'));
+      sv('nb-plaats',     get('Woonplaats'));
+      sv('nb-land',       get('Land') || 'Nederland');
+      sv('nb-personen',   personen || '');
+      sv('nb-huisdieren', huisdieren);
+      sv('nb-huurprijs',  huurprijs || '');
+      sv('nb-borg',       borg);
+      sv('nb-schoonmaak', schoonmaak);
+      sv('nb-extras',     extras);
+      // Toegangscode zit niet in Micazu export — automatisch genereren
+      if (!document.getElementById('nb-code').value) {
+        nbGenereerCode();
+      }
+
+      // Herbereken totaal/aanbetaling/restant
+      nbBerekenTotaal();
+
+      // Opmerking tonen als notitie/info
+      const opmerking = (r['Opmerking'] || '').trim();
+
+      succEl.innerHTML = `✓ Boeking geïmporteerd: <strong>${voornaam} ${achternaam}</strong>`
+        + (opmerking ? `<br><small style="color:var(--text-3)">${opmerking.slice(0, 120)}${opmerking.length > 120 ? '…' : ''}</small>` : '');
+      succEl.style.display = 'block';
+
+    } catch(err) {
+      errEl.textContent = '⚠ Import mislukt: ' + err.message;
+      errEl.style.display = 'block';
+    }
+
+    // Reset input zodat hetzelfde bestand opnieuw gekozen kan worden
+    input.value = '';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── Kalender ──────────────────────────────────────────────────────────────
+function openKalender() {
+  toonKalender(); return;
+  document.body.style.overflow = 'hidden';
+}
+function sluitKalender() {
+  // kal-modal removed
+  document.body.style.overflow = '';
+}
+// Sluiten bij klik buiten modal
+// kal-modal listener removed
+// Sluiten met Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') sluitKalender(); });
+// nb-modal listener removed
+document.addEventListener('keydown', e => { if (e.key === 'Escape') sluitNieuweBoeking(); });
+
+// ── Login ─────────────────────────────────────────────────────────────────
+// Inloggen via Supabase Auth (js/api.js). Alleen accounts in de tabel
+// beheerders krijgen toegang; de database controleert dat bij elke actie.
+let beheerGestart = false;
+
+function toonBeheer() {
+  document.getElementById('login-overlay').style.display = 'none';
+  document.getElementById('main-content').style.display  = 'block';
+  document.querySelectorAll('.sleutel-adres').forEach(el => { el.textContent = sleutelbeheerderAdres(); });
+  if (!beheerGestart) {
+    beheerGestart = true;
+    toonKalender();
+    initFormValidatie();
+    openBoekingUitLink();
+    toonVersie();
+  }
+}
+
+// Link uit een e-mail: ?boeking=<id> (nieuw) of ?aankomst=DD-MM-YYYY&naam=Achternaam (oude mails)
+async function openBoekingUitLink() {
+  const p = new URLSearchParams(location.search);
+  const id = p.get('boeking');
+  const aankomst = p.get('aankomst'), naam = (p.get('naam') || '').trim().toLowerCase();
+  if (!id && !(aankomst && naam)) return;
+  history.replaceState(null, '', location.pathname); // parameters uit de adresbalk halen
+  try {
+    let b = null;
+    if (id) {
+      b = await beheerAuth.boekingOpId(id);
+    } else {
+      const resp = await beheerApi('proxy.php', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ actie: 'laadBoekingen' })
+      });
+      const json = await resp.json();
+      if (json.status !== 'ok') throw new Error(json.message);
+      b = json.boekingen.find(x => x.aankomst === aankomst && String(x.achternaam).trim().toLowerCase() === naam);
+    }
+    if (!b) { alert('Boeking niet gevonden.'); return; }
+    window._boekMap = window._boekMap || {};
+    window._boekMap[b.rijnr] = b;
+    bewerkBoeking(b.rijnr, encodeURIComponent(JSON.stringify(b)));
+  } catch (e) {
+    console.error('openBoekingUitLink:', e);
+  }
+}
+
+function toonLoginScherm() {
+  document.getElementById('main-content').style.display  = 'none';
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('l-pass').value = '';
+}
+
+function toonLoginMelding(tekst, goed) {
+  const err = document.getElementById('login-err');
+  err.textContent = tekst;
+  err.style.background = goed ? 'var(--ok-bg)' : '';
+  err.style.color      = goed ? 'var(--ok)' : '';
+  err.style.display = 'block';
+}
+
+async function doLogin() {
+  const email = document.getElementById('l-user').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const btn   = document.querySelector('.login-btn');
+  document.getElementById('login-err').style.display = 'none';
+  if (!email || !pass) { toonLoginMelding('Vul e-mailadres en wachtwoord in.'); return; }
+  btn.disabled = true;
+  try {
+    const res = await beheerAuth.inloggen(email, pass);
+    if (res.ok) {
+      toonBeheer();
+    } else {
+      toonLoginMelding(res.melding);
+      document.getElementById('l-pass').value = '';
+    }
+  } catch (e) {
+    toonLoginMelding('Verbindingsfout: ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function wachtwoordVergeten() {
+  const email = document.getElementById('l-user').value.trim();
+  if (!email) { toonLoginMelding('Vul eerst je e-mailadres in.'); return; }
+  const gelukt = await beheerAuth.wachtwoordVergeten(email);
+  toonLoginMelding(gelukt
+    ? 'Als dit adres bekend is, ontvang je een mail met een link om een nieuw wachtwoord in te stellen.'
+    : 'Versturen mislukt, probeer het later opnieuw.', gelukt);
+}
+
+async function doLogout() {
+  try { await beheerAuth.uitloggen(); } catch (e) {}
+  location.reload();
+}
+
+document.getElementById('l-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('l-user').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('l-pass').focus(); });
+
+// ── Versie en release notes ───────────────────────────────────────────────
+async function toonVersie() {
+  try {
+    const res = await fetch('/releasenotes.json?t=' + Date.now(), { cache: 'no-store' });
+    const notes = await res.json();
+    window._releasenotes = notes.versies || [];
+    const el = document.getElementById('app-versie');
+    if (el && window._releasenotes.length) el.textContent = 'Versie ' + window._releasenotes[0].versie;
+  } catch (e) { /* geen versie zichtbaar */ }
+}
+
+function openReleasenotes() {
+  const lijst = (window._releasenotes || []).map((v, i) => `
+    <div style="margin-bottom:16px">
+      <div style="font-weight:700;color:var(--gold)">Versie ${v.versie}
+        <span style="font-weight:400;color:var(--text-3);font-size:.8rem">· ${v.datum}${i === 0 ? ' · huidig' : ''}</span></div>
+      <ul style="margin:6px 0 0 18px;padding:0">${(v.wijzigingen || []).map(w => `<li>${w.replace(/</g, '&lt;')}</li>`).join('')}</ul>
+    </div>`).join('');
+  document.getElementById('rn-inhoud').innerHTML = lijst || '<p>Geen versies gevonden.</p>';
+  document.getElementById('rn-modal').style.display = 'flex';
+}
+
+// Bij laden: link uit "wachtwoord vergeten"-mail, of bestaande sessie
+(async function() {
+  sessionStorage.removeItem('broekhof-auth'); // oude client-side vlag opruimen
+  try {
+    await beheerAuth.opWachtwoordHerstel(async () => {
+      const nieuw = prompt('Kies een nieuw wachtwoord (minimaal 8 tekens):');
+      if (!nieuw) return;
+      const fout = await beheerAuth.nieuwWachtwoord(nieuw);
+      alert(fout ? 'Wachtwoord wijzigen mislukt: ' + fout : 'Je wachtwoord is gewijzigd.');
+    });
+    if (await beheerAuth.sessie()) toonBeheer();
+  } catch (e) {
+    toonLoginMelding('De app kan geen verbinding maken: ' + e.message);
+  }
+})();
+
 </script>
 </body>
 </html>
