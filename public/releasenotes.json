@@ -1,9 +1,20 @@
 {
   "versies": [
     {
-      "versie": "2.0.4.1",
+      "versie": "2.0.5.0",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "In de mail over een nieuwe Micazu-boeking kies je nu tussen 'Automatisch aanvullen met de PDF' en 'Zelf aanvullen'; beide knoppen openen de boeking direct in de beheerapp.",
+        "Met het bestand 'Boeking details' dat je in Micazu downloadt, vult de app adres, postcode, plaats, telefoon en e-mail van de huurder vanzelf in.",
+        "Bij het formulier staat ook een knop 'Micazu-PDF', zodat je dit later nog kunt doen; alleen lege velden worden ingevuld.",
+        "De aanhef (heer of mevrouw) wordt geraden uit de voornaam als die nog leeg is. Controleer hem even voordat je opslaat."
+      ]
+    },
+    {
+      "versie": "2.0.4.1",
+      "datum": "2026-11-27",
+      "commit": "bf71799d7d22b0ffba164730d48b977b3f5d2fd0",
       "wijzigingen": [
         "Wordt er geen borg gerekend, dan staat de borg niet meer in de huurovereenkomst en staat er bij Betaling alleen 'exclusief schoonmaak'."
       ]

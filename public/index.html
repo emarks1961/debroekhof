@@ -12,6 +12,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="js/api.js"></script>
 <script src="js/huurovereenkomst.js"></script>
+<script src="js/micazu-pdf.js"></script>
 <script>
 // Inloggen en sessie: zie js/api.js (Supabase Auth).
 
@@ -710,6 +711,53 @@ function toonResultaatMelding(succEl, errEl, btn, txt) {
   }
 }
 
+// ── Huurdergegevens aanvullen uit het Micazu-bestand "Boeking details" ──
+async function vulAanUitMicazuPdf(input) {
+  const bestand = input.files[0];
+  input.value = '';
+  if (!bestand) return;
+  const errEl = document.getElementById('nb-error'), succEl = document.getElementById('nb-success');
+  errEl.style.display = 'none'; succEl.style.display = 'none';
+  try {
+    const g = await leesMicazuPdf(bestand);
+    const el = id => document.getElementById(id);
+    const huidigeAankomst = el('nb-aankomst').value;
+    if (huidigeAankomst && g.aankomst && huidigeAankomst !== g.aankomst
+        && !confirm(`Let op: de PDF is van ${g.voornaam} ${g.achternaam} met aankomst ${g.aankomst.split('-').reverse().join('-')}, `
+          + `maar deze boeking heeft aankomst ${huidigeAankomst.split('-').reverse().join('-')}. Toch aanvullen?`)) return;
+    const gevuld = [];
+    // Alleen lege velden vullen; Nederland is de standaard en mag worden vervangen
+    const vul = (id, waarde, naam) => {
+      if (!waarde) return;
+      const veld = el(id), oud = veld.value.trim();
+      if (oud && !(id === 'nb-land' && oud === 'Nederland')) return;
+      if (oud === waarde) return;
+      veld.value = waarde; gevuld.push(naam);
+    };
+    vul('nb-voornaam', g.voornaam, 'voornaam');
+    vul('nb-achternaam', g.achternaam, 'achternaam');
+    vul('nb-aankomst', g.aankomst, 'aankomst');
+    vul('nb-vertrek', g.vertrek, 'vertrek');
+    vul('nb-adres', g.adres, 'adres');
+    vul('nb-postcode', g.postcode, 'postcode');
+    vul('nb-plaats', g.plaats, 'plaats');
+    vul('nb-land', g.land, 'land');
+    vul('nb-telefoon', g.telefoon, 'telefoon');
+    vul('nb-email', g.email, 'e-mail');
+    vul('nb-aanhef', raadAanhef(el('nb-voornaam').value), 'aanhef');
+    el('nb-pdf-hint').style.display = 'none';
+    succEl.innerHTML = gevuld.length
+      ? `✓ Aangevuld uit Micazu: ${gevuld.join(', ')}.<br><span style="font-weight:400">Controleer de gegevens (vooral de aanhef) en klik daarna op opslaan.</span>`
+      : '✓ Alle gegevens uit de PDF stonden al in de boeking.';
+    succEl.style.display = 'block';
+    succEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  } catch (e) {
+    errEl.textContent = '⚠ PDF inlezen mislukt: ' + e.message;
+    errEl.style.display = 'block';
+    errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
 function resetFormulier() {
   document.getElementById('nb-form').reset();
   document.getElementById('nb-land').value       = 'Nederland';
@@ -723,6 +771,7 @@ function resetFormulier() {
   document.getElementById('nb-overig-prijs').value = '0';
   document.getElementById('nb-schoonmaak').value = '90';
   bewerkRijnr = null;
+  document.getElementById('nb-pdf-hint').style.display = 'none';
   // Verwijder rode randen
   ['nb-aanhef', 'nb-bedlinnen', 'nb-keuken'].forEach(id => {
     const el = document.getElementById(id);
@@ -1127,14 +1176,23 @@ select.nb-inp{appearance:auto}
 <!-- ─── Nieuwe boeking ─────────────────────────────────────── -->
 <div id="page-nb" style="display:none">
   <div style="max-width:680px;margin:0 auto">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--nav);position:sticky;top:0;z-index:100;gap:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--nav);position:sticky;top:0;z-index:100;gap:8px;flex-wrap:wrap">
       <span style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:700;color:#fff">Nieuwe boeking</span>
       <label id="importeer-btn" title="Importeer meest recente boeking uit Excel-bestand" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:5px 10px;border-radius:4px;white-space:nowrap">
             📥 Importeer boeking
             <input type="file" id="importeer-input" accept=".xlsx" style="display:none" onchange="importeerBoeking(this)">
           </label>
+      <label title="Vul huurdergegevens aan uit het Micazu-bestand 'Boeking details' (PDF)" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;padding:5px 10px;border-radius:4px;white-space:nowrap">
+            📄 Micazu-PDF
+            <input type="file" accept=".pdf,application/pdf" style="display:none" onchange="vulAanUitMicazuPdf(this)">
+          </label>
     </div>
     <div style="padding:16px">
+      <div id="nb-pdf-hint" style="display:none;background:#fffbeb;border:1px solid #f0cc70;border-radius:6px;padding:14px 18px;margin-bottom:20px;font-size:.88rem;line-height:1.5">
+        <b>Adresgegevens aanvullen uit Micazu</b><br>
+        Open de boeking in Micazu en download het bestand <i>Boeking details</i> (PDF). Kies dat bestand hieronder; adres, telefoon, e-mail en aanhef worden dan ingevuld.
+        <div style="margin-top:10px"><label style="display:inline-block;background:var(--nav);color:#fff;padding:8px 14px;border-radius:4px;cursor:pointer;font-weight:600">📄 Kies PDF uit Micazu<input type="file" accept=".pdf,application/pdf" style="display:none" onchange="vulAanUitMicazuPdf(this)"></label></div>
+      </div>
       <div id="nb-error" style="display:none;background:#fdecea;border:1px solid #ef9a9a;border-radius:6px;padding:16px 20px;margin-bottom:20px;color:#c62828;font-size:.88rem"></div>
       <div id="nb-success" style="display:none;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:6px;padding:16px 20px;margin-bottom:20px;color:#2e7d32;font-size:.9rem;font-weight:600"></div>
       <form id="nb-form" onsubmit="return false;">
@@ -2202,7 +2260,7 @@ function bewerkBoeking(rijnr, bDataStr) {
   s('nb-vertrek',    nlNaarISO(b.vertrek));
   s('nb-checkin',    b.checkIn  || '16:00');
   s('nb-checkout',   b.checkOut || '10:00');
-  s('nb-aanhef',     b.aanhef);
+  s('nb-aanhef',     b.aanhef || raadAanhef(b.voornaam));
   s('nb-voornaam',   b.voornaam);
   s('nb-achternaam', b.achternaam);
   s('nb-telefoon',   b.telefoon);
@@ -2235,6 +2293,7 @@ function bewerkBoeking(rijnr, bDataStr) {
   // Succes/fout resetten
   document.getElementById('nb-success').style.display = 'none';
   document.getElementById('nb-error').style.display   = 'none';
+  document.getElementById('nb-pdf-hint').style.display = 'none';
 
   // Navigeer naar nieuw boeking formulier
   toonPagina('page-nb');
@@ -2529,6 +2588,7 @@ function toonBeheer() {
 async function openBoekingUitLink() {
   const p = new URLSearchParams(location.search);
   const id = p.get('boeking');
+  const upload = p.get('upload') === '1';
   const aankomst = p.get('aankomst'), naam = (p.get('naam') || '').trim().toLowerCase();
   if (!id && !(aankomst && naam)) return;
   history.replaceState(null, '', location.pathname); // parameters uit de adresbalk halen
@@ -2549,6 +2609,11 @@ async function openBoekingUitLink() {
     window._boekMap = window._boekMap || {};
     window._boekMap[b.rijnr] = b;
     bewerkBoeking(b.rijnr, encodeURIComponent(JSON.stringify(b)));
+    if (upload) {
+      const hint = document.getElementById('nb-pdf-hint');
+      hint.style.display = 'block';
+      hint.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   } catch (e) {
     console.error('openBoekingUitLink:', e);
   }

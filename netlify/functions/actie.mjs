@@ -479,10 +479,9 @@ async function micazuImport(b, inst) {
     throw new Fout('Aankomst, vertrek en achternaam zijn verplicht');
   }
   const naam = String(b.achternaam).trim();
-  const bestaand = await db(`boekingen?verwijderd_op=is.null&aankomst=eq.${b.aankomst}&select=achternaam`);
-  if (bestaand.some(x => x.achternaam.trim().toLowerCase() === naam.toLowerCase())) {
-    return { status: 'ok', resultaat: 'bestond al' };
-  }
+  const bestaand = await db(`boekingen?verwijderd_op=is.null&aankomst=eq.${b.aankomst}&select=id,achternaam`);
+  const dubbel = bestaand.find(x => x.achternaam.trim().toLowerCase() === naam.toLowerCase());
+  if (dubbel) return { status: 'ok', resultaat: 'bestond al', id: dubbel.id };
   const prijzen = inst.prijzen || {};
   const tijden = inst.tijden || {};
   const totaal = Number(b.totaal) || 0;
@@ -707,14 +706,14 @@ async function micazuInbound(req, ruw) {
     return antwoord({ status: 'ok', resultaat: 'doorgestuurd' });
   }
 
-  let b, resultaat;
+  let b, resultaat, boekingId;
   try {
     let laatsteFout;
     for (const versie of versies) {
       try { b = parseMicazuMail(versie); break; } catch (e) { laatsteFout = e; }
     }
     if (!b) throw laatsteFout || new Fout('lege mail');
-    resultaat = (await micazuImport(b, inst)).resultaat;
+    ({ resultaat, id: boekingId } = await micazuImport(b, inst));
   } catch (e) {
     await melding('⚠ Micazu-boeking niet automatisch ingelezen',
       `<p>Deze Micazu-mail kon niet worden verwerkt: <b>${esc(e.message)}</b>.<br>Voer de boeking met de hand in via de beheerapp.</p>
@@ -736,8 +735,31 @@ async function micazuInbound(req, ruw) {
       <tr><td style="padding:2px 12px 2px 0">Schoonmaak</td><td>€ ${b.schoonmaak.toFixed(2).replace('.', ',')} (ter plaatse)</td></tr>
     </table>
     ${b.vraag ? `<p><b>Vraag van de huurder:</b><br>${esc(b.vraag).replace(/\n/g, '<br>')}</p>` : ''}
-    ${resultaat === 'nieuw' ? '<p style="background:#fffbeb;border:1px solid #f0cc70;padding:8px 12px"><b>Nog aanvullen in de beheerapp:</b> aanhef, e-mail, telefoon, adres en borg.</p>' : ''}`);
+    ${resultaat === 'nieuw' ? aanvullenBlok(boekingId) : boekingLink(boekingId)}`);
   return antwoord({ status: 'ok', resultaat });
+}
+
+// Knoppen in de Micazu-mail: automatisch aanvullen met de PDF uit Micazu, of zelf invullen
+function beheerLink(id, extra = '') {
+  const basis = (env('URL') || '').replace(/\/$/, '');
+  return basis && id ? `${basis}/?boeking=${encodeURIComponent(id)}${extra}` : '';
+}
+function knop(href, tekst, hoofd) {
+  return `<a href="${esc(href)}" style="display:inline-block;margin:4px 8px 4px 0;padding:10px 16px;border-radius:4px;text-decoration:none;font-weight:bold;${hoofd ? 'background:#8c6d3f;color:#fff' : 'background:#fff;color:#8c6d3f;border:1px solid #8c6d3f'}">${tekst}</a>`;
+}
+function boekingLink(id) {
+  const url = beheerLink(id);
+  return url ? `<p><a href="${esc(url)}">Boeking openen in de beheerapp</a></p>` : '';
+}
+function aanvullenBlok(id) {
+  const auto = beheerLink(id, '&upload=1'), hand = beheerLink(id);
+  return `<div style="background:#fffbeb;border:1px solid #f0cc70;padding:12px 16px;margin:16px 0">
+    <p style="margin:0 0 8px"><b>Nog aanvullen:</b> aanhef, adres, telefoon, e-mail en borg.</p>
+    <p style="margin:0 0 8px">In Micazu kun je bij deze boeking het bestand <i>Boeking details</i> (PDF) downloaden; daarin staan de adresgegevens van de huurder. Kies hoe je wilt aanvullen:</p>
+    ${auto ? `${knop(auto, '📄 Automatisch aanvullen met de PDF', true)}${knop(hand, '✏️ Zelf aanvullen', false)}
+    <p style="margin:8px 0 0;font-size:12px;color:#666">Automatisch: de boeking opent in de beheerapp, je kiest de gedownloade PDF en adres, telefoon, e-mail en aanhef worden ingevuld. Zelf: de boeking opent en je vult alles met de hand in.</p>`
+    : '<p style="margin:0">Open de boeking in de beheerapp en kies daar 📄 Micazu-PDF.</p>'}
+  </div>`;
 }
 
 // ── Ingang ───────────────────────────────────────────────────────────
