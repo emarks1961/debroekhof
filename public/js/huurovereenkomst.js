@@ -22,6 +22,13 @@
     return n % 1 === 0 ? String(Math.round(n)) : n.toFixed(2).replace('.', ',');
   }
 
+  // "€ 453,--" bij hele euro's, anders "€ 453,60"
+  function euro(v) {
+    const b = bedrag(v);
+    return /,/.test(b) ? `€ ${b}` : `€ ${b},--`;
+  }
+  const getal = v => { const n = parseFloat(String(v ?? '').replace('€', '').replace(',', '.').trim()); return Number.isFinite(n) ? n : 0; };
+
   window.maakHuurovereenkomstPdf = function (p, inst) {
     inst = inst || {};
     const v = k => String(p[k] ?? '').trim();
@@ -90,15 +97,26 @@
     rij('Huurder', [`${v('Voornaam')} ${v('Achternaam')}`, v('Adres'), adresregel, v('Telefoonnummer'), v('E-mail')].filter(Boolean));
     rij('Periode', [`Aankomst: ${v('Datum start')}, ${v('Tijdstip check in')} uur`, `Vertrek: ${v('Datum eind')}, ${v('Tijdstip check out')} uur`]);
     rij('Gebruik', [`${v('Aantal personen')} personen`, `${v('Aantal huisdieren') || '0'} huisdier(en)`]);
-    rij('Huurprijs', [`€ ${bedrag(v("Huurprijs excl. schoonmaak en extra's"))},--`, 'Vooruitbetaling 25% (zie Betaling)']);
-    rij("Extra's", [`€ ${bedrag(v("Prijs extra's"))},--`, "Vooruitbetaling voor extra's als bed- en keukenlinnen"]);
-    rij('Borg', [`€ ${bedrag(v('Borg') || '0')},--`, 'De borg wordt opgeteld bij de aanbetaling en zal direct na de huurperiode worden teruggestort.']);
-    rij('Schoonmaak', [`€ ${schoonmaak},--`, 'Roken in het huis is niet toegestaan. Bij vertrek dient u de woning opgeruimd en bezemschoon achter te laten, zonder sporen van eventuele huisdieren.']);
+    const huur = v("Huurprijs excl. schoonmaak en extra's");
+    const korting = getal(v('Last-minute korting'));
+    rij('Huurprijs', korting > 0
+      ? [`Bruto huurprijs ${euro(v('Bruto huurprijs'))}`, `Last-minute korting: - ${euro(korting)}`, `Huurprijs ${euro(huur)}`, 'Vooruitbetaling 25% (zie Betaling)']
+      : [euro(huur), 'Vooruitbetaling 25% (zie Betaling)']);
+    const bed = getal(v('Aantal bedlinnen')), keuken = getal(v('Aantal keukenlinnen'));
+    const overig = v("Overige extra's"), overigPrijs = getal(v("Prijs overige extra's"));
+    const extraRegels = [
+      bed ? `Bedlinnen: ${bed} × € 10,--` : '',
+      keuken ? `Keukenlinnen: ${keuken} × € 7,--` : '',
+      overig || overigPrijs ? `${overig || 'Overige extra\'s'}: ${euro(overigPrijs)}` : '',
+    ].filter(Boolean);
+    rij("Extra's", [euro(v("Prijs extra's")), ...extraRegels, ...(extraRegels.length ? ['Vooruitbetaling samen met de huurprijs'] : [])]);
+    rij('Borg', [`${euro(v('Borg') || '0')}`, 'De borg wordt opgeteld bij de aanbetaling en zal direct na de huurperiode worden teruggestort.']);
+    rij('Schoonmaak', [euro(schoonmaak), 'Roken in het huis is niet toegestaan. Bij vertrek dient u de woning opgeruimd en bezemschoon achter te laten, zonder sporen van eventuele huisdieren.']);
     rij('Betaling', [
-      `De huurprijs inclusief extra's bedraagt € ${bedrag(v('Totale huursom'))},--. Dit bedrag is exclusief schoonmaak en borg.`,
-      `Uw aanbetaling bedraagt € ${bedrag(v('Aanbetaling'))},--, te betalen binnen één week na ontvangst van de huurovereenkomst.`,
-      `Het resterende deel à € ${bedrag(v('Restant betaling huursom'))},-- ontvangen wij graag vier weken voor het begin van de huurperiode${iban ? ` op rekening ${iban}` : ''}${tnv ? ` t.n.v. ${tnv}` : ''}.`,
-      `De eindschoonmaak is verplicht. Gelieve de schoonmaakkosten à € ${schoonmaak},-- contant te betalen aan ${ontvangst} bij aankomst.`,
+      `De huurprijs inclusief extra's bedraagt ${euro(v('Totale huursom'))}. Dit bedrag is exclusief schoonmaak en borg.`,
+      `Uw aanbetaling bedraagt ${euro(v('Aanbetaling'))}, te betalen binnen één week na ontvangst van de huurovereenkomst.`,
+      `Het resterende deel à ${euro(v('Restant betaling huursom'))} ontvangen wij graag vier weken voor het begin van de huurperiode${iban ? ` op rekening ${iban}` : ''}${tnv ? ` t.n.v. ${tnv}` : ''}.`,
+      `De eindschoonmaak is verplicht. Gelieve de schoonmaakkosten à ${euro(schoonmaak)} contant te betalen aan ${ontvangst} bij aankomst.`,
     ]);
     rij('Sleutels', [
       `De check-in en sleuteloverdracht zal op ${v('Datum start')} om ${v('Tijdstip check in')} uur plaatsvinden op de Broekhof door ${ontvangst}.${ontvangstTel ? ` Indien u onverhoopt later aankomt kunt u haar telefonisch bereiken op ${ontvangstTel}.` : ''}`,

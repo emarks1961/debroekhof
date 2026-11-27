@@ -1,9 +1,21 @@
 {
   "versies": [
     {
-      "versie": "2.0.3.1",
+      "versie": "2.0.4.0",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "Bij een nieuwe boeking vul je bovenaan Financieel de bruto huurprijs en een eventuele last-minute korting in; de huurprijs rekent de app daarna zelf uit.",
+        "Onder Verblijf, boven de toegangscode, kun je nu overige extra's (zoals een kinderbedje) met een eigen prijs invullen; die prijs telt mee bij de extra's.",
+        "De huurovereenkomst toont nu de bruto huurprijs, de korting en per extra wat het kost, en bedragen met centen staan er weer goed in.",
+        "Bij een Micazu-boeking worden de bruto huurprijs, de last-minute korting en overige extra's zoals een kinderbedje automatisch ingevuld.",
+        "Verander je het aantal linnen, dan blijft een kinderbedje of ander overig extra gewoon meetellen."
+      ]
+    },
+    {
+      "versie": "2.0.3.1",
+      "datum": "2026-11-27",
+      "commit": "864655d3a057d818c83d944105cb9d2e30b254e3",
       "wijzigingen": [
         "Na opslaan of versturen schuift het scherm naar de groene bevestiging, zodat je ziet dat het gelukt is. De knop toont dan even '✓ Gelukt', zodat een tweede klik niet per ongeluk een foutmelding geeft."
       ]
