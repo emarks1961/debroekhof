@@ -542,10 +542,17 @@ function htmlNaarTekst(html) {
 
 const MAANDEN = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
 function nlDatumNaarIso(s) {
-  const m = String(s || '').toLowerCase().match(/(\d{1,2})\s+([a-z]+)\s+(\d{4})/);
-  if (!m) return null;
-  const mi = MAANDEN.indexOf(m[2]);
-  return mi < 0 ? null : `${m[3]}-${String(mi + 1).padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+  const t = String(s || '').toLowerCase();
+  const twee = n => String(n).padStart(2, '0');
+  const m = t.match(/(\d{1,2})\.?\s+([a-z]{3,})\.?\s+(\d{4})/);   // 4 december 2026, 4 dec. 2026
+  if (m) {
+    const mi = MAANDEN.findIndex(x => x.startsWith(m[2].slice(0, 3)));
+    if (mi >= 0) return `${m[3]}-${twee(mi + 1)}-${twee(m[1])}`;
+  }
+  const c = t.match(/(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);          // 04-12-2026
+  if (c) return `${c[3]}-${twee(c[2])}-${twee(c[1])}`;
+  const iso = t.match(/(\d{4})-(\d{2})-(\d{2})/);
+  return iso ? iso[0] : null;
 }
 
 function micazuBedrag(s) {
@@ -560,7 +567,10 @@ function micazuBedrag(s) {
 // Zelfde regels als parseMicazuMail in apps-script/micazu.gs
 function parseMicazuMail(tekst) {
   const regels = String(tekst).replace(/\r/g, '').split('\n')
-    .map(r => r.replace(/\u00a0/g, ' ').trim()).filter(Boolean);
+    .map(r => r.replace(/[\u00a0\u2000-\u200b\u202f]/g, ' ')
+      .replace(/^[\s*|>_#-]+/, '').replace(/[\s*|_]+$/, '')   // opmaak uit platte tekst ("**Aankomst** | …")
+      .replace(/\*\*/g, '').replace(/\s*\|\s*/g, '\t').trim())
+    .filter(Boolean);
   function zoek(label, vanaf) {
     const start = vanaf ? Math.max(0, regels.findIndex(r => r.toLowerCase().startsWith(vanaf.toLowerCase()))) : 0;
     for (let i = start; i < regels.length; i++) {
@@ -626,7 +636,9 @@ async function micazuInbound(req, ruw) {
   });
   if (!res.ok) throw new Error(`Ontvangen mail ophalen mislukt (${res.status}): ${(await res.text()).slice(0, 200)}`);
   const m = await res.json();
-  const tekst = m.text || htmlNaarTekst(m.html);
+  // Probeer eerst de tekstversie en anders de HTML-versie van de mail
+  const versies = [m.text, m.html && htmlNaarTekst(m.html)].filter(t => t && t.trim());
+  const tekst = versies.join('\n');
   const inst = await laadInstellingen();
   const origineel = `<hr style="border:none;border-top:1px solid #ddd;margin:20px 0">
     <p style="color:#888;font-size:12px">Oorspronkelijke mail van ${esc(m.from)} · ${esc(m.subject)}</p>
@@ -648,11 +660,17 @@ async function micazuInbound(req, ruw) {
 
   let b, resultaat;
   try {
-    b = parseMicazuMail(tekst);
+    let laatsteFout;
+    for (const versie of versies) {
+      try { b = parseMicazuMail(versie); break; } catch (e) { laatsteFout = e; }
+    }
+    if (!b) throw laatsteFout || new Fout('lege mail');
     resultaat = (await micazuImport(b, inst)).resultaat;
   } catch (e) {
     await melding('⚠ Micazu-boeking niet automatisch ingelezen',
-      `<p>Deze Micazu-mail kon niet worden verwerkt: <b>${esc(e.message)}</b>.<br>Voer de boeking met de hand in via de beheerapp.</p>`);
+      `<p>Deze Micazu-mail kon niet worden verwerkt: <b>${esc(e.message)}</b>.<br>Voer de boeking met de hand in via de beheerapp.</p>
+      <details><summary style="color:#888;font-size:12px">Tekst zoals de app die las (voor foutzoeken)</summary>
+      <pre style="white-space:pre-wrap;font-size:11px;color:#555">${esc(versies.map((v, i) => `--- versie ${i + 1} ---\n${JSON.stringify(v.slice(0, 2500)).slice(1, -1).replace(/\\n/g, '\n')}`).join('\n'))}</pre></details>`);
     return antwoord({ status: 'ok', resultaat: 'mislukt', message: e.message });
   }
   const nl = iso => iso.split('-').reverse().join('-');
