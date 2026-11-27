@@ -1,9 +1,18 @@
 {
   "versies": [
     {
-      "versie": "2.0.7.1",
+      "versie": "2.0.8.0",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "Komt er een nieuwe boeking bij, dan krijgt de sleutelbeheerder de volgende ochtend rond 07:00 automatisch het overzicht, met info in kopie. Bovenaan staat welke boeking of boekingen nieuw zijn, en in het overzicht zijn ze gemarkeerd met NIEUW.",
+        "Heb je de sleutelbeheerder die dag al zelf een overzicht gestuurd, dan komt een boeking die daarvoor al bestond niet nog eens als nieuw."
+      ]
+    },
+    {
+      "versie": "2.0.7.1",
+      "datum": "2026-11-27",
+      "commit": "a76f1fb81e3e2be88bf18865117a58dc712fff25",
       "wijzigingen": [
         "Bij de boekingen staan de notitie en de melding 'Automatisch ingelezen via Micazu' niet meer.",
         "Bij 📧 Overzicht kies je nu naar wie het gaat: Info, Sleutelbeheerder of Beide."
