@@ -1,9 +1,17 @@
 {
   "versies": [
     {
-      "versie": "2.0.2.0",
+      "versie": "2.0.2.1",
       "datum": "2026-11-27",
       "commit": "",
+      "wijzigingen": [
+        "Van Micazu-mails wordt alleen een bevestiging dat je een huurder hebt geaccepteerd een boeking. Andere Micazu-mails worden alleen doorgestuurd naar info@debroekhof.nl."
+      ]
+    },
+    {
+      "versie": "2.0.2.0",
+      "datum": "2026-11-27",
+      "commit": "81f749b73ebf6615625df3b00b5465ee05f63866",
       "wijzigingen": [
         "Micazu-boekingen kunnen nu rechtstreeks door de app worden ingelezen, zonder tussenkomst van Gmail. Je krijgt bij elke nieuwe boeking een melding op info@debroekhof.nl."
       ]
