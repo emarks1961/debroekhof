@@ -435,5 +435,18 @@
       if (error || !data) return null;
       return naarScherm(data);
     },
+
+    // Aanvraag vanaf de website (link uit de mail: ?aanvraag=<uuid>)
+    async aanvraagOpId(id) {
+      await start();
+      const { data, error } = await sb.from('aanvragen').select('*').eq('id', id).maybeSingle();
+      return error ? null : data;
+    },
+
+    async aanvraagStatus(id, status) {
+      await start();
+      const { error } = await sb.from('aanvragen').update({ status }).eq('id', id);
+      return !error;
+    },
   };
 })();

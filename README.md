@@ -82,6 +82,31 @@ Gmail moet lezen. Vervang in het bestaande Apps Script-project `micazu.gs` door
 Zet daarna in Apps Script de triggers van `stuurAankomstMailDagelijks` en
 `stuurFinancieelOverzichtAlsNodig` uit: dat doet de nieuwe app nu (`planning.mjs`).
 
+### 5. Koppeling met de openbare website en Micazu-agenda (`website.mjs`)
+
+| Adres | Wat |
+| --- | --- |
+| `GET /api/beschikbaarheid` | bezette periodes als JSON (`{ bezet: [{ van, tot }] }`, `tot` = vertrekdag), uit de boekingen én de Micazu-agenda; geen namen |
+| `POST /api/aanvraag` | aanvraag vanaf de website → tabel `aanvragen`, mail naar info@ met knop naar de beheerapp, ontvangstbevestiging naar de aanvrager |
+| `GET /api/ical?token=…` | agenda voor Micazu met eigen boekingen die nog niet in Micazu staan |
+
+1. Voer `supabase/migrations/20261128000007_aanvragen.sql` uit in de SQL Editor.
+2. Zet in Netlify `MICAZU_ICAL_URL`, `ICAL_EXPORT_TOKEN` en `WEBSITE_ORIGINS` (zie `.env.example`) en publiceer opnieuw.
+3. Geef in Micazu bij het agendabeheer als te importeren agenda op:
+   `https://beheer.debroekhof.app/api/ical?token=<ICAL_EXPORT_TOKEN>`.
+4. Op de website:
+
+   ```js
+   const r = await fetch('https://beheer.debroekhof.app/api/beschikbaarheid');
+   const { bezet } = await r.json();          // dag d is bezet als van <= d < tot
+   await fetch('https://beheer.debroekhof.app/api/aanvraag', {
+     method: 'POST', headers: { 'Content-Type': 'application/json' },
+     body: JSON.stringify({ naam, email, telefoon, aankomst, vertrek, personen, huisdier, bericht, website: '' }),
+   });                                         // "website" is een onzichtbaar veld tegen bots
+   ```
+
+   Antwoorden van `/api/aanvraag`: 200 ok, 422 met `velden` (per veld een melding), 409 `bezet`, 429 te veel aanvragen.
+
 ## Gegevens overzetten uit de Google Sheet
 
 Zie `scripts/migratie/migreer.mjs`. Kort:

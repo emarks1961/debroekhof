@@ -1,9 +1,19 @@
 {
   "versies": [
     {
+      "versie": "2.0.11.0",
+      "datum": "2026-11-28",
+      "commit": "",
+      "wijzigingen": [
+        "De website kan nu laten zien welke dagen bezet zijn, op basis van de boekingen in deze app en de agenda van Micazu, zonder namen van gasten.",
+        "Een aanvraag via de website komt als mail bij info binnen, met een knop die Nieuwe boeking opent met de gegevens van de aanvrager al ingevuld.",
+        "Boekingen die je zelf in deze app zet, kan Micazu nu ophalen, zodat ze daar ook als bezet staan."
+      ]
+    },
+    {
       "versie": "2.0.10.2",
       "datum": "2026-11-27",
-      "commit": "",
+      "commit": "e373487e402266dc677e4081fa051737514cd60b",
       "wijzigingen": [
         "De link 'OneDrive koppelen' onderaan de pagina is weggehaald."
       ]
