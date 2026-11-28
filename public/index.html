@@ -801,6 +801,7 @@ function resetFormulier() {
   document.getElementById('nb-schoonmaak').value = '90';
   bewerkRijnr = null;
   document.getElementById('nb-pdf-hint').style.display = 'none';
+  document.getElementById('nb-aanvraag-hint').style.display = 'none';
   // Verwijder rode randen
   ['nb-aanhef', 'nb-bedlinnen', 'nb-keuken'].forEach(id => {
     const el = document.getElementById(id);
@@ -1226,6 +1227,11 @@ select.nb-inp{appearance:auto}
           </label>
     </div>
     <div style="padding:16px">
+      <div id="nb-aanvraag-hint" style="display:none;background:#eef6ee;border:1px solid #a9cfa9;border-radius:6px;padding:14px 18px;margin-bottom:20px;font-size:.88rem;line-height:1.5">
+        <b>Aanvraag via de website</b><br>
+        <span id="nb-aanvraag-tekst" style="white-space:pre-line"></span><br>
+        Naam, e-mail, telefoon, datums en personen zijn al ingevuld. Vul de huurprijs en de overige gegevens aan en sla de boeking op.
+      </div>
       <div id="nb-pdf-hint" style="display:none;background:#fffbeb;border:1px solid #f0cc70;border-radius:6px;padding:14px 18px;margin-bottom:20px;font-size:.88rem;line-height:1.5">
         <b>Adresgegevens aanvullen uit Micazu</b><br>
         Open de boeking in Micazu en download het bestand <i>Boeking details</i> (PDF). Kies dat bestand hieronder; adres, telefoon, e-mail en aanhef worden dan ingevuld.
@@ -2330,6 +2336,7 @@ function bewerkBoeking(rijnr, bDataStr) {
   document.getElementById('nb-success').style.display = 'none';
   document.getElementById('nb-error').style.display   = 'none';
   document.getElementById('nb-pdf-hint').style.display = 'none';
+  document.getElementById('nb-aanvraag-hint').style.display = 'none';
 
   // Navigeer naar nieuw boeking formulier
   toonPagina('page-nb');
@@ -2636,6 +2643,7 @@ function toonBeheer() {
 // Link uit een e-mail: ?boeking=<id> (nieuw) of ?aankomst=DD-MM-YYYY&naam=Achternaam (oude mails)
 async function openBoekingUitLink() {
   const p = new URLSearchParams(location.search);
+  if (p.get('aanvraag')) { openAanvraagUitLink(p.get('aanvraag')); return; }
   const id = p.get('boeking');
   const upload = p.get('upload') === '1';
   const aankomst = p.get('aankomst'), naam = (p.get('naam') || '').trim().toLowerCase();
@@ -2665,6 +2673,39 @@ async function openBoekingUitLink() {
     }
   } catch (e) {
     console.error('openBoekingUitLink:', e);
+  }
+}
+
+// Link uit de mail over een website-aanvraag: ?aanvraag=<id>
+// Opent "Nieuwe boeking" met de gegevens van de aanvrager al ingevuld.
+async function openAanvraagUitLink(id) {
+  history.replaceState(null, '', location.pathname);
+  try {
+    const a = await beheerAuth.aanvraagOpId(id);
+    if (!a) { alert('Aanvraag niet gevonden.'); return; }
+    setNav(document.getElementById('nav-nb'));
+    openNieuweBoeking();
+    const zet = (veld, waarde) => { const el = document.getElementById(veld); if (el && waarde != null) el.value = waarde; };
+    const delen = String(a.naam || '').trim().split(/\s+/);
+    zet('nb-voornaam', delen.length > 1 ? delen[0] : '');
+    zet('nb-achternaam', delen.length > 1 ? delen.slice(1).join(' ') : delen[0]);
+    zet('nb-email', a.email);
+    zet('nb-telefoon', a.telefoon || '');
+    zet('nb-aankomst', a.aankomst);
+    zet('nb-vertrek', a.vertrek);
+    zet('nb-personen', a.personen);
+    zet('nb-huisdieren', a.huisdier ? 1 : 0);
+    if (typeof nbBerekenSchoonmaak === 'function') nbBerekenSchoonmaak();
+    if (typeof raadAanhef === 'function') zet('nb-aanhef', raadAanhef(document.getElementById('nb-voornaam').value));
+    const hint = document.getElementById('nb-aanvraag-hint');
+    document.getElementById('nb-aanvraag-tekst').textContent =
+      `Aanvraag van ${a.naam}, ontvangen ${new Date(a.ontvangen_op).toLocaleDateString('nl-NL')}.` +
+      (a.huisdier ? ' Neemt een huisdier mee.' : '') +
+      (a.bericht ? `\nBericht: ${a.bericht}` : '');
+    hint.style.display = 'block';
+    if (a.status === 'nieuw') beheerAuth.aanvraagStatus(a.id, 'overgenomen');
+  } catch (e) {
+    console.error('openAanvraagUitLink:', e);
   }
 }
 
